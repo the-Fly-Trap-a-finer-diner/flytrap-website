@@ -1117,16 +1117,20 @@ section { position: relative; }
 .dish-card img { height: 180px; width: auto; display: block; }   /* uniform height, natural width — no crop, no letterbox */
 @media (min-width: 768px) { .dish-card img { height: 240px; } }
 .dish-card .label {
-  position: absolute;
-  bottom: 8px; left: 8px; right: 8px;
+  /* Sits below the photo (no longer overlaid). Reserves a fixed 3-line-tall
+     plate so cards line up in a tidy row; text is centered top-to-bottom, so
+     one-line titles rest in the middle instead of clinging to the top edge. */
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
+  line-height: 1.35;
   color: var(--color-cream-paper);
-  background: rgba(26,26,26,.62);
-  backdrop-filter: blur(4px);
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: 8px 10px;
+  min-height: calc(1.35em * 3 + 16px); /* 3 lines of text + 8px padding top & bottom */
+  display: flex;
+  align-items: center;      /* vertical centering */
+  justify-content: center;  /* horizontal centering */
+  text-align: center;
 }
 .dish-nav {
   position: absolute; top: 46%;
