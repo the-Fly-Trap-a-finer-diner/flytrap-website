@@ -126,17 +126,17 @@ window.FT_DATA = {
   // photo (he named the files after the caption he wanted); the label is also the
   // image's alt text. Order below is the order the photos arrived.
   dishes: [
-    { src: "assets/dishes/the-burger.jpg", label: "Meatloaf Sandwich Special" },
-    { src: "assets/dishes/fried-rice.jpg", label: "Fried Rice" },
-    { src: "assets/dishes/full-bar.jpg", label: "Full Bar" },
-    { src: "assets/dishes/here-we-are.jpg", label: "Here we are!" },
-    { src: "assets/dishes/house-made-sausage.jpg", label: "House Made Sausage" },
-    { src: "assets/dishes/special-smoked-chicken-hash.jpg", label: "Special Smoked Chicken Hash" },
-    { src: "assets/dishes/sweet-special.jpg", label: "Sweet Special" },
-    { src: "assets/dishes/classic.jpg", label: "Classic" },
-    { src: "assets/dishes/wham-jam-strawberry-basil.jpg", label: "Wham! Jam — Strawberry Basil" },
-    { src: "assets/dishes/between-bread-in-the-wild.jpg", label: "Between Bread in the Wild" },
-    { src: "assets/dishes/saag-paneer.jpg", label: "Saag Paneer" }
+    { src: "assets/dishes/the-burger.jpg", label: "Meatloaf Sandwich Special", w: 760, h: 335 },
+    { src: "assets/dishes/fried-rice.jpg", label: "Fried Rice", w: 760, h: 364 },
+    { src: "assets/dishes/full-bar.jpg", label: "Full Bar", w: 360, h: 480 },
+    { src: "assets/dishes/here-we-are.jpg", label: "Here we are!", w: 360, h: 480 },
+    { src: "assets/dishes/house-made-sausage.jpg", label: "House Made Sausage", w: 360, h: 480 },
+    { src: "assets/dishes/special-smoked-chicken-hash.jpg", label: "Special Smoked Chicken Hash", w: 270, h: 480 },
+    { src: "assets/dishes/sweet-special.jpg", label: "Sweet Special", w: 360, h: 480 },
+    { src: "assets/dishes/classic.jpg", label: "Classic", w: 480, h: 480 },
+    { src: "assets/dishes/wham-jam-strawberry-basil.jpg", label: "Wham! Jam — Strawberry Basil", w: 640, h: 480 },
+    { src: "assets/dishes/between-bread-in-the-wild.jpg", label: "Between Bread in the Wild", w: 320, h: 480 },
+    { src: "assets/dishes/saag-paneer.jpg", label: "Saag Paneer", w: 360, h: 480 }
   ],
 };
 

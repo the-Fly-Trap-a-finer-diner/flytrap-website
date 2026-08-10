@@ -54,7 +54,7 @@ function DishScroll() {
         <div className="dish-track" ref={trackRef}>
           {dishes.map((d, i) =>
           <figure className="dish-card" key={i}>
-              <img src={d.src} alt={d.label} loading="lazy" />
+              <img src={d.src} alt={d.label} width={d.w} height={d.h} loading="lazy" />
               <figcaption className="label">{d.label}</figcaption>
             </figure>
           )}
