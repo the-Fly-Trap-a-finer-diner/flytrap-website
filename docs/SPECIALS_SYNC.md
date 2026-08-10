@@ -37,7 +37,7 @@ tested `apps-script/lib/specials.js` block builder):
 5. Rewrite the `/* SPECIALS:START … END */` block **and** the
    `/* EXTRAS:START … END */` block (soup + muffin) of `data.js`.
 
-On an **out-of-stock soup day** — the Toast item flagged out of stock, with its
+On a **no-soup day** — the Toast item flagged out of stock, with its
 description set to a message like "No soup on the weekend!" — the sync writes
 `available:false` and **clears the prices**, so the site passes that description
 through on its own with no price hanging off it. In stock, it shows the flavor +
@@ -86,9 +86,14 @@ block keeps its own last-good committed state as the fallback.
 - **Soup:** the **"Soup O' The Day"** item — its description is the flavor, its
   base price is the Cup price, and the **"Bowl" option of the "Soup Sizes" modifier
   group** adds its upcharge to the base for the Bowl price (e.g. base $5 + $1 =
-  $6). To take the soup down for the day, mark the item **out of stock** in
-  Toast and set its description to the message you want shown (e.g. "No soup on the
-  weekend!"); the site shows that message with no price. Legacy "Cup of Soup" /
+  $6). To take the soup down for the day, set its description to the message you
+  want shown (e.g. "No soup on the weekend!"); the site shows that message with no
+  price. Marking the item **out of stock** as well is good practice, but **either
+  signal is enough on its own** — a description that says there is no soup clears
+  the prices even if the stock flag was never flipped. That is deliberate: on
+  2026-08-08 the live site read "Sorry! No soup on the weekend!" with Cup $5.00 /
+  Bowl $6.00 still beside it, because only the message had been written. Pricing a
+  soup that doesn't exist is worse than showing nothing. Legacy "Cup of Soup" /
   "Bowl of Soup" items are still read as a fallback. Overridable via
   `TOAST_SOUP_ITEM` (+ `TOAST_SOUP_CUP_ITEM`, `TOAST_SOUP_BOWL_ITEM`).
 - **Muffin:** the "Muffin" item (matched loosely) for the muffin price + flavor;

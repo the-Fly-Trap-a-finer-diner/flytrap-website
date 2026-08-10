@@ -326,6 +326,26 @@ function findMenuItem(payload, needle) {
 // veg flag). Only whitespace is normalised.
 const cleanFlavor = (d) => String(d == null ? '' : d).replace(/\s+/g, ' ').trim()
 
+// Is the soup "flavor" actually a notice that there is no soup?
+//
+// Taking the soup down is meant to be two steps in Toast: mark the item out of
+// stock AND write the message. In practice only the message gets written — on
+// 2026-08-08 the site read "Sorry! No soup on the weekend!" with Cup $5.00 /
+// Bowl $6.00 still beside it, because the out-of-stock flag was never flipped.
+//
+// Pricing a soup that doesn't exist is worse than showing nothing, so the text
+// is treated as authoritative too: if the description says there's no soup, the
+// prices come off regardless of the stock flag. Deliberately narrow — it matches
+// an explicit statement of absence, not any sentence containing "soup".
+export function isNoSoupMessage(flavor) {
+  const t = cleanFlavor(flavor).toLowerCase()
+  if (!t) return false
+  return /\bno soup\b/.test(t) ||
+    /\bsoup('s| is)? (all )?(sold out|gone|out)\b/.test(t) ||
+    /\bwe('re| are) out of soup\b/.test(t) ||
+    /\bsoup (is )?unavailable\b/.test(t)
+}
+
 // Resolve a soup *size* modifier option (e.g. "Cup" / "Bowl") for an item and
 // return the option object, or null. Toast's /menus/v2 delivers the size group by
 // integer reference — item.modifierGroupReferences -> payload.modifierGroupReferences
@@ -376,9 +396,11 @@ export function extractSoup(payload, opts = {}) {
 }
 
 function soupFromSingleItem(payload, item, opts) {
-  const available = item.outOfStock !== true
-  const soup = { available }
   const flavor = cleanFlavor(item.description)
+  // Either signal takes the soup down: the Toast stock flag, or a description
+  // that plainly says there isn't any. See isNoSoupMessage.
+  const available = item.outOfStock !== true && !isNoSoupMessage(flavor)
+  const soup = { available }
   if (flavor) soup.flavor = flavor
   if (!available) {
     soup.cup = ''
@@ -407,9 +429,15 @@ function soupFromCupBowlItems(payload, opts) {
   const bowlItem = findMenuItem(payload, opts.bowlItem || SOUP_BOWL_ITEM)
   if (!cupItem && !bowlItem) return null
 
-  // Available unless every present soup item is flagged out of stock.
+  const cupDesc = cleanFlavor(cupItem && cupItem.description)
+  const bowlDesc = cleanFlavor(bowlItem && bowlItem.description)
+
+  // Available unless every present soup item is flagged out of stock — or either
+  // description plainly says there is no soup. Same reasoning as the single-item
+  // path: never price a soup that doesn't exist.
   const present = [cupItem, bowlItem].filter(Boolean)
-  const available = present.some((it) => it.outOfStock !== true)
+  const available = present.some((it) => it.outOfStock !== true) &&
+    !isNoSoupMessage(cupDesc) && !isNoSoupMessage(bowlDesc)
 
   const soup = { available }
   if (available) {
@@ -420,8 +448,6 @@ function soupFromCupBowlItems(payload, opts) {
     soup.bowl = ''
   }
 
-  const cupDesc = cleanFlavor(cupItem && cupItem.description)
-  const bowlDesc = cleanFlavor(bowlItem && bowlItem.description)
   if (cupDesc && bowlDesc) {
     if (cupDesc === bowlDesc) soup.flavor = cupDesc
     else console.warn(`[soup] Cup/Bowl descriptions differ — leaving flavor hand-set. cup=${JSON.stringify(cupDesc)} bowl=${JSON.stringify(bowlDesc)}`)

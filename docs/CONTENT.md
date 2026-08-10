@@ -37,7 +37,7 @@ nobody edits the repo.** The conventions Toast expects:
 | **Pull a special down** | Move it out of the "Weekly Specials" group. (Removing just the photo no longer pulls it — it publishes without one.) |
 | **Soup flavour** | The description of the **"Soup O' The Day"** item. |
 | **Soup prices** | Item base price = Cup. The **"Bowl"** option of the **"Soup Sizes"** modifier group adds its upcharge to the base (e.g. $5 base + $1 = $6 Bowl). |
-| **Soup unavailable** | Mark the item **out of stock** and set its description to the message you want shown ("No soup on the weekend!"). The site shows the message with no price. |
+| **Soup unavailable** | Set its description to the message you want shown ("No soup on the weekend!"). Marking the item **out of stock** as well is good practice, but the message alone is enough — the site shows it with no price either way. |
 | **Muffin** | The "Muffin" item (matched loosely) — price + description as the flavour. |
 | **Vegetarian** | Append the 🥬 glyph to the item's Toast description. On specials, the `(v)` text marker also works and is stripped from the shown text. |
 

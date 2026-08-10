@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { extractSoup, extractMuffin } from '../.github/scripts/specials-sync.mjs';
+import { extractSoup, extractMuffin, isNoSoupMessage } from '../.github/scripts/specials-sync.mjs';
 import { updateSoupSpecial, updateMuffinSpecial } from '../apps-script/lib/specials.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -47,6 +47,51 @@ test('extractSoup resolves the bowl from an inline size group too (upcharge on t
 test('extractSoup: out of stock -> available:false, prices cleared, message kept as the flavor', () => {
   const payload = menu([refItem({ description: 'No soup on the weekend!', outOfStock: true })], REFS(0, 1));
   assert.deepEqual(extractSoup(payload), { available: false, flavor: 'No soup on the weekend!', cup: '', bowl: '' });
+});
+
+// --- "no soup" written in the description, without the out-of-stock flag ---
+// Seen live 2026-08-08: flavor read "Sorry! No soup on the weekend!" while the
+// site still showed Cup $5.00 / Bowl $6.00, because only the message was set.
+
+test('extractSoup: a "no soup" message alone clears the prices, stock flag or not', () => {
+  const payload = menu([refItem({ description: 'Sorry! No soup on the weekend!' })], REFS(0, 1));
+  assert.deepEqual(extractSoup(payload), { available: false, flavor: 'Sorry! No soup on the weekend!', cup: '', bowl: '' });
+});
+
+test('extractSoup: a real flavor still prices normally', () => {
+  const payload = menu([refItem({ description: "Nona's Cannellini 🥬" })], REFS(0, 1));
+  assert.deepEqual(extractSoup(payload), { available: true, flavor: "Nona's Cannellini 🥬", cup: 5, bowl: 6 });
+});
+
+test('extractSoup (legacy): a "no soup" description clears the prices too', () => {
+  const payload = menu([cup(5, 'No soup today!'), bowl(6, 'No soup today!')]);
+  assert.deepEqual(extractSoup(payload), { available: false, flavor: 'No soup today!', cup: '', bowl: '' });
+});
+
+test('isNoSoupMessage matches the ways a soup gets taken down', () => {
+  for (const t of [
+    'No soup on the weekend!',
+    'Sorry! No soup on the weekend!',
+    'no soup today',
+    'Soup is sold out',
+    "Soup's gone!",
+    'We are out of soup',
+    "we're out of soup",
+    'Soup unavailable',
+  ]) assert.equal(isNoSoupMessage(t), true, t);
+});
+
+test('isNoSoupMessage does not fire on an actual soup flavor', () => {
+  for (const t of [
+    "Nona's Cannellini 🥬",
+    'Egg Drop 🥬',
+    'Chicken Noodle Soup',
+    'Soup of the Day: tomato bisque',
+    'Roasted tomato, no cream',
+    '',
+    null,
+    undefined,
+  ]) assert.equal(isNoSoupMessage(t), false, String(t));
 });
 
 test('extractSoup: the single item takes precedence over legacy Cup/Bowl items', () => {
