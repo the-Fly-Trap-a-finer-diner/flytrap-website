@@ -275,6 +275,10 @@ button { font-family: inherit; }
 .hero-wordmark {
   display: block;
   width: 100%;
+  /* The intrinsic width/height attributes on this img are there to reserve space
+     before it loads (CLS). Without an explicit height:auto the attribute height
+     wins and the logo renders stretched. */
+  height: auto;
   filter: drop-shadow(0 4px 16px rgba(0,0,0,.5)) brightness(1.05);
 }
 

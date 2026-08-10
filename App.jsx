@@ -467,7 +467,7 @@ window.Hero = function HeroWrap(props) {
     <header className="hero hero-solid" id="top" style={{ background: "var(--color-checker-black)", color: "var(--color-flytrap-red-bright)" }}>
       <div className="hero-content">
         <div className="hero-wordmark-wrap">
-          <img className="hero-wordmark" src="assets/brand/flytrap-logo-original-red.png" alt="The Fly Trap — a finer diner" />
+          <img className="hero-wordmark" src="assets/brand/flytrap-logo-original-red.png" alt="The Fly Trap — a finer diner" width="1003" height="401" fetchpriority="high" />
         </div>
         <div className="hero-actions">
           <a
