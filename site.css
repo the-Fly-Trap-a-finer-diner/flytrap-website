@@ -1117,9 +1117,14 @@ section { position: relative; }
 .dish-card img { height: 180px; width: auto; display: block; }   /* uniform height, natural width — no crop, no letterbox */
 @media (min-width: 768px) { .dish-card img { height: 240px; } }
 .dish-card .label {
-  /* Sits below the photo (no longer overlaid). Reserves a fixed 3-line-tall
-     plate so cards line up in a tidy row; text is centered top-to-bottom, so
-     one-line titles rest in the middle instead of clinging to the top edge. */
+  /* Sits below the photo (no longer overlaid). The photo alone sets the card
+     width (natural aspect ratio preserved); width:0 + min-width:100% makes this
+     caption match the photo's width without ever widening the card, so long
+     titles wrap onto the reserved 3 lines instead of stretching the card.
+     Fixed 3-line-tall plate keeps cards aligned; text is centered top-to-bottom
+     so one-line titles rest in the middle instead of clinging to the top edge. */
+  width: 0;
+  min-width: 100%;
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
