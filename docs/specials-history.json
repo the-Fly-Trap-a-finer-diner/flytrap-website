@@ -211,12 +211,22 @@
   },
   {
     "firstSeen": "2026-08-07",
-    "lastSeen": "2026-08-10",
+    "lastSeen": "2026-08-13",
     "name": "The Sloppy Toad",
     "desc": "Pecan smoked BBQ pullled mushroom sandwich on a house roll with jack cheese, caramelized onion, tomato and a fresno vinegar slaw; pick your side! 🥬",
     "price": "14.95",
     "veg": true,
     "photo": "assets/specials/toast-the-sloppy-toad.jpg",
     "photoBlob": "738ebf14ee6a5a10cbf5b18bc0d45acfedad7dc0"
+  },
+  {
+    "firstSeen": "2026-08-13",
+    "lastSeen": "2026-08-13",
+    "name": "the Mia Maestro",
+    "desc": "A rumble of eggs with house made Argentine chorizo, sweet & hot peppers, provolone cheese and greens, topped with chimichurri; comes with browns and toast!",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-mia-maestro.jpg",
+    "photoBlob": "1f5ef98231828abbc7c4a2a7356f2d6b43121069"
   }
 ]

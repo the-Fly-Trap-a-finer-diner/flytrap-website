@@ -114,7 +114,7 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Malaka", desc: "House made chicken gyro sausage served up with eggs how you like 'em on a schmear of favosalata. Topped with a cucumber, tomato and feta cream; comes with pita!", veg: false, photo: "assets/specials/toast-the-malaka.jpg", price: "15.95" },
+    { id: "special-1", name: "the Mia Maestro", desc: "A rumble of eggs with house made Argentine chorizo, sweet & hot peppers, provolone cheese and greens, topped with chimichurri; comes with browns and toast!", veg: false, photo: "assets/specials/toast-the-mia-maestro.jpg", price: "14.95" },
     { id: "special-2", name: "The Sloppy Toad", desc: "Pecan smoked BBQ pullled mushroom sandwich on a house roll with jack cheese, caramelized onion, tomato and a fresno vinegar slaw; pick your side! 🥬", veg: true, photo: "assets/specials/toast-the-sloppy-toad.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
