@@ -228,5 +228,25 @@
     "veg": false,
     "photo": "assets/specials/toast-the-mia-maestro.jpg",
     "photoBlob": "1f5ef98231828abbc7c4a2a7356f2d6b43121069"
+  },
+  {
+    "firstSeen": "2026-08-14",
+    "lastSeen": "2026-08-14",
+    "name": "The Renault 5",
+    "desc": "Sweet and sour cream stuffed crepes with gingered plum compote, pistachio crumble and whipped cream! 🥬",
+    "price": "12.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-renault-5.jpg",
+    "photoBlob": "3944cd114384369b9da1d079945787d9a05e2999"
+  },
+  {
+    "firstSeen": "2026-08-14",
+    "lastSeen": "2026-08-14",
+    "name": "The Amphicar 770",
+    "desc": "It's a crab rangoon omelette! Crab, scallions, cream cheese and spinach snugged into an omelette with crispy wontons and duck sauce; browns and toast.",
+    "price": "16.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-amphicar-770.jpg",
+    "photoBlob": "d56bb7bed1a91ef35079f349dbfa74ae9777542a"
   }
 ]

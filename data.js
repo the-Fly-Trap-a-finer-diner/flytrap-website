@@ -114,13 +114,13 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "the Mia Maestro", desc: "A rumble of eggs with house made Argentine chorizo, sweet & hot peppers, provolone cheese and greens, topped with chimichurri; comes with browns and toast!", veg: false, photo: "assets/specials/toast-the-mia-maestro.jpg", price: "14.95" },
-    { id: "special-2", name: "The Sloppy Toad", desc: "Pecan smoked BBQ pullled mushroom sandwich on a house roll with jack cheese, caramelized onion, tomato and a fresno vinegar slaw; pick your side! 🥬", veg: true, photo: "assets/specials/toast-the-sloppy-toad.jpg", price: "14.95" },
+    { id: "special-1", name: "The Renault 5", desc: "Sweet and sour cream stuffed crepes with gingered plum compote, pistachio crumble and whipped cream! 🥬", veg: true, photo: "assets/specials/toast-the-renault-5.jpg", price: "12.95" },
+    { id: "special-2", name: "The Amphicar 770", desc: "It's a crab rangoon omelette! Crab, scallions, cream cheese and spinach snugged into an omelette with crispy wontons and duck sauce; browns and toast.", veg: false, photo: "assets/specials/toast-the-amphicar-770.jpg", price: "16.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
   muffinSpecial: { name: "Mini Muffins", flavor: "Banana Chip🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Babcia's Dill Pickle 🥬", available: true, cup: "5.00", bowl: "6.00" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekend! 🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the
