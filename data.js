@@ -115,7 +115,6 @@ window.FT_DATA = {
   weekOf: "Week of July 6",
   specials: [
     { id: "special-1", name: "The Renault 5", desc: "Sweet and sour cream stuffed crepes with gingered plum compote, pistachio crumble and whipped cream! 🥬", veg: true, photo: "assets/specials/toast-the-renault-5.jpg", price: "12.95" },
-    { id: "special-2", name: "The Amphicar 770", desc: "It's a crab rangoon omelette! Crab, scallions, cream cheese and spinach snugged into an omelette with crispy wontons and duck sauce; browns and toast.", veg: false, photo: "assets/specials/toast-the-amphicar-770.jpg", price: "16.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
