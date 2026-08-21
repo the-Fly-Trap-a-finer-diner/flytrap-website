@@ -114,12 +114,13 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Renault 5", desc: "Sweet and sour cream stuffed crepes with gingered plum compote, pistachio crumble and whipped cream! 🥬", veg: true, photo: "assets/specials/toast-the-renault-5.jpg", price: "12.95" },
+    { id: "special-1", name: "The Stanley Kowalski", desc: "It's a fried bologna sandwich! House made, smoked thick-cut and green chili infused on a bun with cowboy candy, pickled onion, BBQ aioli, 'merican cheese,\na sunny egg, lettuce and tomato; pick your side!", veg: true, photo: "assets/specials/toast-the-stanley-kowalski.jpg", price: "15.95" },
+    { id: "special-2", name: "The Eastern Seaboard", desc: "Two eggs how you like 'em sitting on a crispy scallion flatbread topped with a clinatro, cucumber and yuzu salad, toasted sesame and a sweet gochujang drizzle. 🥬", veg: true, photo: "assets/specials/toast-the-eastern-seaboard.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
   muffinSpecial: { name: "Mini Muffins", flavor: "Mexican Chocolate🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Burmese 3 Lentil 🥬", available: true, cup: "5.00", bowl: "6.00" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekend!!", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the

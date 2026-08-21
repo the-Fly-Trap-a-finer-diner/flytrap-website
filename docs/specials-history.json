@@ -248,5 +248,25 @@
     "veg": false,
     "photo": "assets/specials/toast-the-amphicar-770.jpg",
     "photoBlob": "d56bb7bed1a91ef35079f349dbfa74ae9777542a"
+  },
+  {
+    "firstSeen": "2026-08-21",
+    "lastSeen": "2026-08-21",
+    "name": "The Stanley Kowalski",
+    "desc": "It's a fried bologna sandwich! House made, smoked thick-cut and green chili infused on a bun with cowboy candy, pickled onion, BBQ aioli, 'merican cheese,\r\na sunny egg, lettuce and tomato; pick your side!",
+    "price": "15.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-stanley-kowalski.jpg",
+    "photoBlob": "70dc8bd59d90e29b771f2d60fd992f67907a33ee"
+  },
+  {
+    "firstSeen": "2026-08-21",
+    "lastSeen": "2026-08-21",
+    "name": "The Eastern Seaboard",
+    "desc": "Two eggs how you like 'em sitting on a crispy scallion flatbread topped with a clinatro, cucumber and yuzu salad, toasted sesame and a sweet gochujang drizzle. 🥬",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-eastern-seaboard.jpg",
+    "photoBlob": "23554c250f3024d0aa079d5da1b3b0fccc947d75"
   }
 ]
