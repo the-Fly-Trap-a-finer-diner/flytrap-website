@@ -48,7 +48,47 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Circuit breaker. An automatic rollback creates .github/SYNC_PAUSED when a
+  # synced deploy fails verification. Without this gate the next scheduled run
+  # re-pulls the same bad Toast data, the rollback fires again, and the two trade
+  # commits every fifteen minutes until a human notices.
+  #
+  # Its own job rather than a first step so a paused run shows as SKIPPED. A step
+  # that exited non-zero would post a red X and a failure email four times an
+  # hour for as long as the pause lasts, drowning the incident it belongs to.
+  #
+  # Deleting the file is the deliberate act that resumes syncing, and it is meant
+  # to happen only once the underlying Toast item or sync bug is fixed. The site
+  # keeps serving the last verified-good content meanwhile.
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      paused: ${{ steps.check.outputs.paused }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Only .github is needed to read the flag; skip the image assets.
+          sparse-checkout: .github
+          sparse-checkout-cone-mode: false
+      - id: check
+        run: |
+          if [ -f .github/SYNC_PAUSED ]; then
+            echo "paused=true" >> "$GITHUB_OUTPUT"
+            echo "::warning::Toast sync is paused by .github/SYNC_PAUSED — skipping this run."
+            {
+              echo "## Toast sync is paused"
+              echo
+              echo '```'
+              cat .github/SYNC_PAUSED
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "paused=false" >> "$GITHUB_OUTPUT"
+          fi
+
   sync:
+    needs: guard
+    if: needs.guard.outputs.paused != 'true'
     runs-on: ubuntu-latest
     env:
       TOAST_CLIENT_ID: ${{ secrets.TOAST_CLIENT_ID }}

@@ -38,8 +38,12 @@ on:
         default: 'https://theflytrapferndale.com'
 
 permissions:
-  contents: read
+  # write: the rollback pushes a restore commit to main when a synced deploy
+  # fails verification, and records the last-known-good ref on every green run.
+  contents: write
   issues: write
+  # dispatching the Pages redeploy after a rollback push
+  actions: write
 
 concurrency:
   group: post-deploy-verify
@@ -55,6 +59,9 @@ jobs:
       - name: Check out the commit that was deployed
         uses: actions/checkout@v7
         with:
+          # Full history: the rollback restores files from an older commit, and a
+          # shallow clone would not have it.
+          fetch-depth: 0
           # For a workflow_run, head_sha is the commit Pages built from. Checking
           # out that exact commit is what makes the freshness check meaningful:
           # anything else and we would be comparing the live site against a
@@ -68,6 +75,17 @@ jobs:
       - name: Expected data.js blob
         id: expected
         run: echo "sha=$(git hash-object data.js)" >> "$GITHUB_OUTPUT"
+
+      # The last commit confirmed working on the live site, kept in a custom ref
+      # rather than a branch or a tag so it clutters nobody's clone and triggers
+      # no workflows. Recording it is what makes rollback safe: during the first
+      # outage f3359d7 and e1f39a4 were both broken back to back, so rolling back
+      # one commit would have landed on another blank site.
+      - name: Read the last-known-good ref
+        id: lkg
+        run: |
+          git fetch --quiet origin '+refs/verified/last-known-good:refs/verified/last-known-good' 2>/dev/null || true
+          echo "sha=$(git rev-parse --verify --quiet refs/verified/last-known-good || true)" >> "$GITHUB_OUTPUT"
 
       - name: Verify the live site
         id: health
@@ -86,6 +104,26 @@ jobs:
           RETRY_DELAY_MS: '45000'
         run: node .github/scripts/site-health.mjs
 
+      - name: Record this commit as verified-good
+        if: steps.health.outcome == 'success'
+        env:
+          DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          git push --force --quiet origin "$DEPLOYED_SHA:refs/verified/last-known-good"
+          echo "Recorded $DEPLOYED_SHA as the last verified-good deploy." >> "$GITHUB_STEP_SUMMARY"
+
+      # Only on a real deploy. A manual dispatch verifies whatever is live, which
+      # may be older than the checkout, and rolling back off the back of that
+      # would be rolling back to a commit nobody deployed.
+      - name: Roll back to the last verified-good commit
+        id: rollback
+        if: steps.health.outcome != 'success' && github.event_name == 'workflow_run'
+        env:
+          LKG_SHA: ${{ steps.lkg.outputs.sha }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: node .github/scripts/rollback.mjs
+
       # Same incident issue the scheduled monitor uses, so a broken deploy and a
       # broken site are one thread rather than two competing ones — and a deploy
       # that fixes an outage closes the issue the monitor opened.
@@ -93,7 +131,10 @@ jobs:
         uses: ./.github/actions/incident
         with:
           state: ${{ steps.health.outcome == 'success' && 'healthy' || 'failing' }}
-          summary: ${{ steps.health.outputs.summary }}
+          summary: |
+            ${{ steps.health.outputs.summary }}
+
+            ${{ steps.rollback.outputs.note }}
           source: post-deploy verify
           site-url: ${{ inputs.site_url || 'https://theflytrapferndale.com' }}
           assignees: ${{ vars.INCIDENT_ASSIGNEES || 'ryankolean,smcclanaghan76' }}
