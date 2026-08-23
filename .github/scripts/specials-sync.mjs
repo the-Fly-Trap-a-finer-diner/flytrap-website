@@ -46,6 +46,7 @@ const ASSETS_DIR = resolve(REPO_ROOT, 'assets/specials')
 // Archive of every special ever published. Lives under docs/ so it stays out of
 // the Pages deploy artifact — it is a record for the restaurant, not a site asset.
 const HISTORY_JSON = resolve(REPO_ROOT, 'docs/specials-history.json')
+const SITEMAP_XML = resolve(REPO_ROOT, 'sitemap.xml')
 
 // Every scrap of text Toast hands us goes through here before it reaches data.js.
 // Toast descriptions are typed into a POS field and come back with whatever the
@@ -601,6 +602,21 @@ async function main() {
       console.log(`Specials history: ${history.length} entr${history.length === 1 ? 'y' : 'ies'} recorded in docs/specials-history.json.`)
     }
   }
+
+  // The specials are the only thing on this site that changes on its own, so the
+  // sitemap's lastmod is only honest if it moves with them. Hand-maintained it
+  // just goes stale and tells crawlers the page is older than it is.
+  try {
+    const sm = await readFile(SITEMAP_XML, 'utf8')
+    const today = new Date().toISOString().slice(0, 10)
+    // /g: the sitemap has one <url> today, but without it a second entry added
+    // later would silently keep a stale date while the first one moved.
+    const next = sm.replace(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g, `<lastmod>${today}</lastmod>`)
+    if (next !== sm) {
+      await writeFile(SITEMAP_XML, next)
+      console.log(`Sitemap lastmod set to ${today}.`)
+    }
+  } catch { /* no sitemap.xml - nothing to touch */ }
   const wrote = [specials.length ? `${specials.length} specials` : '', soup ? 'soup' : '', muffin ? 'muffin' : ''].filter(Boolean).join(' + ')
   console.log(`Wrote ${wrote} to data.js${fixture ? ' [fixture, images skipped]' : (withPhotos.length ? ' (+ images)' : '')}.`)
   if (skipped.length) console.log(`Skipped ${skipped.length} item(s) in "${SPECIALS_GROUP}": ${skipped.map((s) => `${s.name} (${s.reason})`).join('; ')}`)

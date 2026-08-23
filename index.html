@@ -58,11 +58,21 @@
   "url": "https://theflytrapferndale.com/",
   "telephone": "+1-248-399-5150",
   "email": "dine@theflytrapferndale.com",
-  "image": "https://theflytrapferndale.com/assets/og-image.jpg",
+  "@id": "https://theflytrapferndale.com/#restaurant",
+  "image": [
+    "https://theflytrapferndale.com/assets/og-image.jpg",
+    "https://theflytrapferndale.com/assets/dishes/here-we-are.jpg",
+    "https://theflytrapferndale.com/assets/dishes/the-burger.jpg"
+  ],
+  "logo": "https://theflytrapferndale.com/assets/brand/flytrap-logo-original-red.png",
+  "hasMap": "https://maps.google.com/?q=22950+Woodward+Ave,+Ferndale,+MI+48220",
   "servesCuisine": ["American", "Breakfast", "Brunch", "Diner"],
   "priceRange": "$$",
   "foundingDate": "2004-12-28",
   "acceptsReservations": "False",
+  "takeaway": true,
+  "hasDeliveryMethod": "http://purl.org/goodrelations/v1#PickUp",
+  "areaServed": { "@type": "City", "name": "Ferndale", "sameAs": "https://en.wikipedia.org/wiki/Ferndale,_Michigan" },
   "hasMenu": "https://theflytrapferndale.com/#menu",
   "address": {
     "@type": "PostalAddress",
@@ -93,6 +103,13 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
+
+<!-- LCP element: the hero wordmark. Preloaded so it starts downloading before
+     the JSX that renders it has been fetched, let alone transpiled. -->
+<link rel="preload" as="image" href="assets/brand/flytrap-logo-original-red.png" fetchpriority="high">
+<!-- The two faces actually used above the fold. The rest load on demand. -->
+<link rel="preload" as="font" type="font/woff2" href="fonts/fraunces-v38-latin-700.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/inter-v20-latin-400.woff2" crossorigin>
 
 <link rel="stylesheet" href="colors_and_type.css">
 <link rel="stylesheet" href="site.css">
