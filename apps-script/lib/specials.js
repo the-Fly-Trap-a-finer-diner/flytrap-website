@@ -3,11 +3,26 @@
 // guarded so it is a no-op in Apps Script (where `module` is undefined) and
 // active in Node (CommonJS), which the .mjs tests import via ESM/CJS interop.
 
+// Serialize a value as the INNER text of a double-quoted JS string literal.
+//
+// data.js is loaded by the browser as a plain <script>, so this output has to be
+// a legal string-literal body no matter what Toast puts in a description. The
+// characters that matter are the two delimiters (\ and ") and the four JS
+// LineTerminators — LF, CR, U+2028, U+2029. A raw CR is the one that has already
+// bitten us: Toast returns CRLF in some descriptions, the old escaper only
+// handled LF, and the surviving CR terminated the string mid-line, turned all of
+// data.js into a SyntaxError and blanked the site (fixed by e0b8d07, Aug 2026).
+//
+// JSON.stringify is the spec-complete escaper for all of that: it escapes both
+// delimiters and every C0 control, CR and LF included. Slicing off its quotes
+// leaves the literal body. It leaves U+2028/U+2029 bare — legal inside a string
+// literal since ES2019, so they no longer break parsing, but they are invisible
+// line breaks in the rendered text, so escape them too.
 function jsStr(s) {
-  return String(s == null ? '' : s)
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n');
+  return JSON.stringify(String(s == null ? '' : s))
+    .slice(1, -1)
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
 
 function buildSpecialsBlock(input) {
@@ -57,10 +72,26 @@ function fmtMoney(v) {
   return isFinite(n) ? n.toFixed(2) : '';
 }
 
-// Read a double-quoted string field out of an object-literal snippet.
+// Read a double-quoted string field out of an object-literal snippet, decoding
+// its escapes back to the real value.
+//
+// The regex captures SOURCE text, so a stored `He said \"hi\"` comes back with
+// the backslashes still in it. Returning that raw meant a preserved field was
+// re-escaped by jsStr on the next write, doubling its backslashes on every
+// single no-op sync run (`\"` -> `\\\"` -> `\\\\\\"`) until the flavor text on the
+// site was unreadable. Decode here so the value round-trips unchanged.
+//
+// JSON.parse is the exact inverse of the JSON.stringify jsStr writes with. The
+// fallback covers a hand-edited value using a JS escape JSON does not accept
+// (\', \v, \xNN) — better to return it verbatim than to blank the field.
 function pickField(objText, key) {
   var mm = new RegExp(key + ':\\s*"((?:[^"\\\\]|\\\\.)*)"').exec(objText);
-  return mm ? mm[1] : '';
+  if (!mm) return '';
+  try {
+    return JSON.parse('"' + mm[1] + '"');
+  } catch (e) {
+    return mm[1];
+  }
 }
 
 // Read an unquoted boolean field (key: true|false) out of an object-literal
