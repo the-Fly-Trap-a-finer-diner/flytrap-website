@@ -1,0 +1,97 @@
+name: Post-deploy verify
+
+# Closes the loop on the deploy pipeline: after anything goes live, prove the
+# site still works and prove the thing we just pushed is the thing being served.
+#
+# Nothing did this before. On 2026-08-21 the Toast sync committed a data.js that
+# could not be parsed, Pages deployed it happily, and the site was blank for 25
+# hours. Every gate in the path had a hole:
+#
+#   Guardrails  the sync commits with [skip ci], so it never ran — and it had no
+#               JS parse check, so it would not have caught it either
+#   Pages       rsync + upload. Never looks at what it is shipping
+#   Tests       73 of them, covering this exact serializer, never run in CI
+#
+# This runs on `workflow_run` after "Deploy to GitHub Pages" completes, which
+# covers every path to production — the Toast bot, a merged PR, a manual
+# dispatch — instead of only the sync. [skip ci] cannot suppress it, because it
+# keys off the deploy workflow rather than off the push.
+#
+# The check itself is .github/scripts/site-health.mjs: it fetches the live site,
+# parses the live data.js, and loads the page in headless Chrome to confirm React
+# actually mounts. Status codes alone would have called the outage healthy — the
+# broken site served 200 for every single file.
+#
+# Retries are generous on purpose. Pages fronts a CDN, so "not live yet" and
+# "broken" look identical for the first minute or so. Failing fast here would
+# mean a false alarm on every deploy.
+
+on:
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: 'Base URL to verify'
+        type: string
+        default: 'https://theflytrapferndale.com'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-deploy-verify
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    # A deploy that already failed needs no verifying — the deploy's own red X is
+    # the signal. Only verify what actually claims to have shipped.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the commit that was deployed
+        uses: actions/checkout@v7
+        with:
+          # For a workflow_run, head_sha is the commit Pages built from. Checking
+          # out that exact commit is what makes the freshness check meaningful:
+          # anything else and we would be comparing the live site against a
+          # different revision than the one that just deployed.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Expected data.js blob
+        id: expected
+        run: echo "sha=$(git hash-object data.js)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify the live site
+        id: health
+        env:
+          SITE_URL: ${{ inputs.site_url || 'https://theflytrapferndale.com' }}
+          # Only assert freshness for a real deploy. On a manual dispatch the
+          # checkout is main's tip, which may legitimately be ahead of what is
+          # live, and demanding a match would fail for no good reason.
+          EXPECT_DATA_JS_SHA: ${{ github.event_name == 'workflow_run' && steps.expected.outputs.sha || '' }}
+          # Up to ~5 attempts over ~4 minutes. Pages propagation is the slow part;
+          # a genuinely broken site fails all five just as fast as it fails one.
+          ATTEMPTS: '5'
+          RETRY_DELAY_MS: '45000'
+        run: node .github/scripts/site-health.mjs
+
+      - name: Say what broke
+        if: failure()
+        # Expression values go through env, never straight into the shell — the
+        # standard guard against workflow command injection.
+        env:
+          DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          echo "::error::The site failed verification after deploying $DEPLOYED_SHA."
+          echo "::error::The full check table is in the job summary."
+          echo
+          echo "To roll back: revert $DEPLOYED_SHA on main — Pages redeploys on push."
+          echo "If the Toast sync wrote it, fix the Toast item, then re-run the sync"
+          echo "with force=true to regenerate data.js."
