@@ -39,6 +39,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: post-deploy-verify
@@ -70,6 +71,9 @@ jobs:
 
       - name: Verify the live site
         id: health
+        # Never fail the step: the alerting below has to run either way, and it
+        # is what closes an open incident when a deploy fixes the site.
+        continue-on-error: true
         env:
           SITE_URL: ${{ inputs.site_url || 'https://theflytrapferndale.com' }}
           # Only assert freshness for a real deploy. On a manual dispatch the
@@ -82,8 +86,21 @@ jobs:
           RETRY_DELAY_MS: '45000'
         run: node .github/scripts/site-health.mjs
 
+      # Same incident issue the scheduled monitor uses, so a broken deploy and a
+      # broken site are one thread rather than two competing ones — and a deploy
+      # that fixes an outage closes the issue the monitor opened.
+      - name: Open, update or close the incident
+        uses: ./.github/actions/incident
+        with:
+          state: ${{ steps.health.outcome == 'success' && 'healthy' || 'failing' }}
+          summary: ${{ steps.health.outputs.summary }}
+          source: post-deploy verify
+          site-url: ${{ inputs.site_url || 'https://theflytrapferndale.com' }}
+          assignees: ${{ vars.INCIDENT_ASSIGNEES || 'ryankolean,smcclanaghan76' }}
+          token: ${{ github.token }}
+
       - name: Say what broke
-        if: failure()
+        if: steps.health.outcome != 'success'
         # Expression values go through env, never straight into the shell — the
         # standard guard against workflow command injection.
         env:
@@ -95,3 +112,4 @@ jobs:
           echo "To roll back: revert $DEPLOYED_SHA on main — Pages redeploys on push."
           echo "If the Toast sync wrote it, fix the Toast item, then re-run the sync"
           echo "with force=true to regenerate data.js."
+          exit 1

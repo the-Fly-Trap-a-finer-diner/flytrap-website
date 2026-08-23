@@ -1,0 +1,182 @@
+name: Incident notice
+description: >-
+  Open, update and close a GitHub issue tracking whether the site is up, and
+  put it in front of the people who need to fix it.
+
+# Why an issue rather than email or a push service:
+#
+#   - it needs no secrets, so it works the moment it merges
+#   - GitHub emails every assignee on assignment and on each comment, so the
+#     notification is real without us running a mail server
+#   - it leaves an audit trail: when the site broke, what the checks said, when
+#     it recovered, and how long it was down
+#
+# The dedupe logic is the important part. The monitor runs four times an hour;
+# without it, a weekend outage would open a hundred issues and everyone would
+# mute the repo. One issue per outage, updated at most hourly, closed
+# automatically on recovery.
+
+inputs:
+  state:
+    description: '"failing" or "healthy"'
+    required: true
+  summary:
+    description: 'Markdown check table from site-health.mjs'
+    required: false
+    default: ''
+  source:
+    description: 'What noticed — e.g. "scheduled monitor" or "post-deploy verify"'
+    required: true
+  assignees:
+    description: 'Comma-separated GitHub usernames to assign and notify'
+    required: true
+  site-url:
+    description: 'The site being monitored'
+    required: false
+    default: 'https://theflytrapferndale.com'
+  token:
+    description: 'Token with issues: write'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@v7
+      env:
+        INCIDENT_STATE: ${{ inputs.state }}
+        INCIDENT_SUMMARY: ${{ inputs.summary }}
+        INCIDENT_SOURCE: ${{ inputs.source }}
+        INCIDENT_ASSIGNEES: ${{ inputs.assignees }}
+        INCIDENT_SITE_URL: ${{ inputs.site-url }}
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          // Every value arrives via env, never interpolated into this script —
+          // the standard guard against workflow command injection.
+          const state     = process.env.INCIDENT_STATE
+          const summary   = process.env.INCIDENT_SUMMARY || ''
+          const source    = process.env.INCIDENT_SOURCE
+          const siteUrl   = process.env.INCIDENT_SITE_URL
+          const assignees = (process.env.INCIDENT_ASSIGNEES || '')
+            .split(',').map((s) => s.trim()).filter(Boolean)
+
+          const { owner, repo } = context.repo
+          const LABEL  = 'site-down'
+          // Hidden marker so we find our own issue without depending on the
+          // title, which a human may well rename mid-incident.
+          const MARKER = '<!-- flytrap-site-health-incident -->'
+          const RE_NOTIFY_MS = 60 * 60 * 1000
+          const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`
+
+          const ensureLabel = async () => {
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: LABEL })
+            } catch {
+              await github.rest.issues.createLabel({
+                owner, repo, name: LABEL, color: 'b60205',
+                description: 'The live site is failing its health check',
+              })
+            }
+          }
+
+          const findOpen = async () => {
+            const { data } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: LABEL, per_page: 100,
+            })
+            return data.find((i) => (i.body || '').includes(MARKER)) || null
+          }
+
+          const open = await findOpen()
+
+          // ---------------------------------------------------------- healthy
+          if (state !== 'failing') {
+            if (!open) {
+              core.info('Site healthy, no open incident. Nothing to do.')
+              return
+            }
+            const downMs = Date.now() - new Date(open.created_at).getTime()
+            const mins = Math.round(downMs / 60000)
+            const down = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: open.number,
+              body: [
+                `## Recovered`, ``,
+                `${siteUrl} is passing every health check again, as of ${source}.`, ``,
+                `**Down for approximately ${down}.**`, ``,
+                summary, ``,
+                `[Run that confirmed recovery](${runUrl})`, ``,
+                `Closing automatically. Worth a look at what changed — an outage that`,
+                `fixed itself usually means something upstream did.`,
+              ].join('\n'),
+            })
+            await github.rest.issues.update({ owner, repo, issue_number: open.number, state: 'closed' })
+            core.notice(`Site recovered after ~${down} — closed #${open.number}.`)
+            return
+          }
+
+          // ---------------------------------------------------------- failing
+          const body = [
+            MARKER, ``,
+            `## ${siteUrl} is failing its health check`, ``,
+            `Detected by **${source}**.`, ``,
+            summary, ``,
+            `---`, ``,
+            `### What to do`, ``,
+            `1. Open ${siteUrl} and see it for yourself.`,
+            `2. Read the check table above — it names the failing layer.`,
+            `3. \`data.js\` failing means a Toast description carried a character that`,
+            `   broke the file. Fix the item in Toast, then run **Toast sync** with`,
+            `   \`force=true\` to regenerate it.`,
+            `4. Anything else: revert the last commit on \`main\`. Pages redeploys on push.`, ``,
+            `[Latest run](${runUrl})`, ``,
+            `This issue updates itself while the site is down and closes itself on`,
+            `recovery. It will not comment more than once an hour.`,
+          ].join('\n')
+
+          if (open) {
+            // Already tracking it. Refresh the body every run so the top of the
+            // issue is always current, but only comment — which is what actually
+            // emails people — at most once an hour.
+            await github.rest.issues.update({ owner, repo, issue_number: open.number, body })
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: open.number, per_page: 100,
+            })
+            const last = comments.length ? comments[comments.length - 1] : null
+            const sinceMs = Date.now() - new Date(last ? last.created_at : open.created_at).getTime()
+
+            if (sinceMs >= RE_NOTIFY_MS) {
+              const mins = Math.round((Date.now() - new Date(open.created_at).getTime()) / 60000)
+              const down = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: open.number,
+                body: `### Still down — ${down} so far\n\n${summary}\n\n[Latest run](${runUrl})`,
+              })
+              core.warning(`Site still down (~${down}) — commented on #${open.number}.`)
+            } else {
+              core.warning(`Site still down — refreshed #${open.number} (next comment in ${Math.round((RE_NOTIFY_MS - sinceMs) / 60000)}m).`)
+            }
+            core.setOutput('issue', String(open.number))
+            return
+          }
+
+          await ensureLabel()
+          const { data: created } = await github.rest.issues.create({
+            owner, repo,
+            title: `[site down] ${siteUrl} is failing its health check`,
+            body,
+            labels: [LABEL],
+          })
+
+          // Assign separately: a username that is no longer a collaborator makes
+          // the whole create call fail, and losing the alert entirely because one
+          // handle went stale is the worst possible outcome.
+          try {
+            await github.rest.issues.addAssignees({
+              owner, repo, issue_number: created.number, assignees,
+            })
+          } catch (err) {
+            core.warning(`Opened #${created.number} but could not assign ${assignees.join(', ')}: ${err.message}`)
+          }
+          core.setOutput('issue', String(created.number))
+          core.notice(`Site is down — opened #${created.number} and notified ${assignees.join(', ')}.`)
