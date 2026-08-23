@@ -114,7 +114,7 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Stanley Kowalski", desc: "It's a fried bologna sandwich! House made, smoked thick-cut and green chili infused on a bun with cowboy candy, pickled onion, BBQ aioli, 'merican cheese,\na sunny egg, lettuce and tomato; pick your side!", veg: true, photo: "assets/specials/toast-the-stanley-kowalski.jpg", price: "15.95" },
+    { id: "special-1", name: "The Stanley Kowalski", desc: "It's a fried bologna sandwich! House made, smoked thick-cut and green chili infused on a bun with cowboy candy, pickled onion, BBQ aioli, 'merican cheese, a sunny egg, lettuce and tomato; pick your side!", veg: true, photo: "assets/specials/toast-the-stanley-kowalski.jpg", price: "15.95" },
     { id: "special-2", name: "The Eastern Seaboard", desc: "Two eggs how you like 'em sitting on a crispy scallion flatbread topped with a clinatro, cucumber and yuzu salad, toasted sesame and a sweet gochujang drizzle. 🥬", veg: true, photo: "assets/specials/toast-the-eastern-seaboard.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
