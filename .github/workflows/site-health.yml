@@ -1,0 +1,87 @@
+name: Site health
+
+# Continuous uptime monitoring for theflytrapferndale.com, with a notice to
+# whoever can fix it.
+#
+# Post-deploy verify catches a bad deploy. This catches everything else: an
+# expired cert, a Pages outage, a DNS change, a CDN serving a stale broken copy,
+# a dependency that stopped answering. It also backstops the deploy check, since
+# a site can be fine at deploy time and broken an hour later.
+#
+# The 2026-08-21 outage ran 25 hours before a human happened to look, and the
+# 2026-08-23 repeat ran 2 hours. Both were found by eye. This is the thing that
+# means nobody has to notice.
+#
+# Runs the same .github/scripts/site-health.mjs as post-deploy verify — a
+# monitor that checks something other than what the deploy gate checks is a
+# monitor you cannot reason about. Status codes are not enough: during both
+# outages every file returned HTTP 200 while the page rendered blank, so this
+# loads the site in headless Chrome and confirms React actually mounts.
+#
+# On failure it opens one GitHub issue and assigns Ryan and Sean, which emails
+# both. One issue per outage, updated at most hourly, closed automatically on
+# recovery — see .github/actions/incident. A monitor that opens 96 issues a day
+# gets muted, and a muted monitor is worse than none.
+
+on:
+  schedule:
+    # Roughly every 15 minutes, on :07/:22/:37/:52. Deliberately offset from the
+    # Toast sync's :02/:17/:32/:47 so a health check never lands mid-deploy and
+    # reports a half-propagated site. GitHub's scheduler is best-effort and drops
+    # sub-hourly runs under load; the :00 slot is the worst, hence neither.
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: 'Base URL to check'
+        type: string
+        default: 'https://theflytrapferndale.com'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: site-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Check the live site
+        id: health
+        # Do not fail the step — the alerting below has to run either way, and it
+        # is what closes the issue when the site comes back.
+        continue-on-error: true
+        env:
+          SITE_URL: ${{ inputs.site_url || 'https://theflytrapferndale.com' }}
+          # Three tries a minute apart. A real outage still alerts within ~4
+          # minutes of the check starting; a transient CDN blip or a slow cold
+          # cache resolves on the retry instead of waking anyone up.
+          ATTEMPTS: '3'
+          RETRY_DELAY_MS: '60000'
+        run: node .github/scripts/site-health.mjs
+
+      - name: Open, update or close the incident
+        uses: ./.github/actions/incident
+        with:
+          state: ${{ steps.health.outcome == 'success' && 'healthy' || 'failing' }}
+          summary: ${{ steps.health.outputs.summary }}
+          source: scheduled monitor
+          site-url: ${{ inputs.site_url || 'https://theflytrapferndale.com' }}
+          # Set the INCIDENT_ASSIGNEES repo variable to change who gets paged.
+          # Both must be repo collaborators or GitHub silently drops them.
+          assignees: ${{ vars.INCIDENT_ASSIGNEES || 'ryankolean,smcclanaghan76' }}
+          token: ${{ github.token }}
+
+      - name: Fail the run if the site is down
+        if: steps.health.outcome != 'success'
+        run: |
+          echo "::error::Site health check failed — see the incident issue."
+          exit 1

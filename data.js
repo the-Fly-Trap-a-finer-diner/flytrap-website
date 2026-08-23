@@ -114,13 +114,13 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Malaka", desc: "House made chicken gyro sausage served up with eggs how you like 'em on a schmear of favosalata. Topped with a cucumber, tomato and feta cream; comes with pita!", veg: false, photo: "assets/specials/toast-the-malaka.jpg", price: "15.95" },
-    { id: "special-2", name: "The Sloppy Toad", desc: "Pecan smoked BBQ pullled mushroom sandwich on a house roll with jack cheese, caramelized onion, tomato and a fresno vinegar slaw; pick your side! 🥬", veg: true, photo: "assets/specials/toast-the-sloppy-toad.jpg", price: "14.95" },
+    { id: "special-1", name: "The Stanley Kowalski", desc: "It's a fried bologna sandwich! House made, smoked thick-cut and green chili infused on a bun with cowboy candy, pickled onion, BBQ aioli, 'merican cheese, a sunny egg, lettuce and tomato; pick your side!", veg: true, photo: "assets/specials/toast-the-stanley-kowalski.jpg", price: "15.95" },
+    { id: "special-2", name: "The Eastern Seaboard", desc: "Two eggs how you like 'em sitting on a crispy scallion flatbread topped with a clinatro, cucumber and yuzu salad, toasted sesame and a sweet gochujang drizzle. 🥬", veg: true, photo: "assets/specials/toast-the-eastern-seaboard.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Banana Chip🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekend!", available: true, cup: "5.00", bowl: "6.00" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Mexican Chocolate🥬", price: "0.99" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekend!!", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the

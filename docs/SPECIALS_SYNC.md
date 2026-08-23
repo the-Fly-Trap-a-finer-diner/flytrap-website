@@ -159,3 +159,65 @@ wasn't one.
 
 If Toast is unreachable, the last good specials stay live (see Fallback above).
 To change what's on the site, change it in Toast.
+
+## When a sync breaks the site
+
+Since the two August 2026 outages there are four layers between a bad Toast
+description and a blank site. In order:
+
+1. **The sync refuses to write a `data.js` that does not parse** and exits
+   non-zero, so the last-good file stays committed and live.
+2. **Post-deploy verify** loads the live site in a headless browser after every
+   deploy and fails if React does not mount.
+3. **Automatic rollback** restores the synced files from the last commit
+   confirmed working, pushes, and pauses the sync.
+4. **The scheduled monitor** checks every 15 minutes and opens an issue
+   assigned to Ryan and Sean.
+
+### The sync is paused — what now
+
+A rollback leaves `.github/SYNC_PAUSED` in the repo. While it exists the Toast
+sync skips every run (it shows as *skipped*, not failed) and the site keeps
+serving the last verified-good content. Nothing expires; it waits for a person.
+
+To resume:
+
+1. Read the incident issue and the pause file — both say what failed.
+2. Fix the cause. Usually the Toast item; occasionally the sync script.
+3. Delete `.github/SYNC_PAUSED` and commit.
+4. Run **Toast sync** with `force=true` to pull a fresh copy — the normal
+   `lastUpdated` gate would otherwise skip until Toast changes again.
+
+### Rolling back by hand
+
+Automatic rollback only touches commits authored by `flytrap-toast-bot`. For
+anything else, or if it declined:
+
+```bash
+# The last commit confirmed working on the live site
+git rev-parse refs/verified/last-known-good
+
+# Restore exactly what the sync owns
+git checkout <good-sha> -- data.js assets/menu.json assets/specials docs/specials-history.json
+git commit -m "revert(toast): restore the last verified-good site"
+git push
+```
+
+Use `git checkout <sha> -- <paths>`, **not `git revert`**. Every sync rewrites
+the same line of `data.js`, so reverting anything but the tip conflicts.
+
+Do not assume the previous commit is good. During the first outage two syncs
+were broken back to back, so stepping back one would have landed on another
+blank site. `refs/verified/last-known-good` is the only SHA known to have served
+a working page.
+
+To get the site back in seconds without touching `main`, re-run the last good
+Pages deploy — it rebuilds from that run's commit:
+
+```bash
+gh run list --workflow="Deploy to GitHub Pages" --limit 10 --json databaseId,headSha,conclusion
+gh run rerun <id>
+```
+
+That is a stop-gap: `main` still holds the bad commit, so the next push
+redeploys it.
