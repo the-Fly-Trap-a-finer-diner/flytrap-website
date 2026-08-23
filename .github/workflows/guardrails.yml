@@ -114,7 +114,28 @@ jobs:
             while read -r line; do err "Specials photo referenced but not committed: ${line#MISSING_PHOTO:}"; done < <(grep MISSING_PHOTO /tmp/photo_check)
           fi
 
-          echo "== 7. Hygiene =="
+          echo "== 7. Every shipped .js / .jsx parses =="
+          # The browser loads data.js and the components as plain <script> tags:
+          # one syntax error anywhere blanks the whole site. A raw CR that the
+          # Toast sync wrote into a specials description did exactly that on
+          # 2026-08-21 and nothing in CI noticed for 25 hours. `node --check`
+          # parses without executing, needs no install, and keeps the no-build
+          # rule intact. .jsx is skipped — it is JSX, not parseable as plain JS.
+          for f in data.js image-slot.js; do
+            if [ -f "$f" ]; then
+              node --check "$f" 2>/tmp/nodecheck.err \
+                || err "$f is not valid JavaScript: $(head -3 /tmp/nodecheck.err | tr '\n' ' ')"
+            fi
+          done
+          # Bare CR anywhere in a tracked text file. Inside a JS string literal a
+          # CR is a line terminator, so it breaks the parse; everywhere else it is
+          # just churn. Caught separately from node --check so the error names the
+          # real cause instead of "Invalid or unexpected token".
+          if git grep -Il $'\r' -- '*.js' '*.jsx' '*.css' '*.html' '*.json' >/dev/null 2>&1; then
+            err "Carriage return found in a tracked text file: $(git grep -Il $'\r' -- '*.js' '*.jsx' '*.css' '*.html' '*.json' | tr '\n' ' ')"
+          fi
+
+          echo "== 8. Hygiene =="
           if grep -rn 'bolt.host' --exclude-dir='.git' --exclude-dir='.github' . 2>/dev/null; then
             err "bolt.host reference found"
           fi
@@ -130,3 +151,16 @@ jobs:
             exit 1
           fi
           echo "All guardrails passed."
+
+  # The sync scripts' unit + end-to-end tests. These existed but nothing ever ran
+  # them, so the serializer bug that blanked the site on 2026-08-21 shipped past a
+  # green pipeline. Separate job from `guardrails` so that one stays install-free.
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Toast sync tests
+        run: node --test test/*.test.mjs

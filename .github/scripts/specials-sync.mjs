@@ -32,6 +32,7 @@
 
 import { readFile, writeFile, mkdir, access, readdir, rm } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
+import vm from 'node:vm'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import specialsLib from '../../apps-script/lib/specials.js'
@@ -45,6 +46,47 @@ const ASSETS_DIR = resolve(REPO_ROOT, 'assets/specials')
 // Archive of every special ever published. Lives under docs/ so it stays out of
 // the Pages deploy artifact — it is a record for the restaurant, not a site asset.
 const HISTORY_JSON = resolve(REPO_ROOT, 'docs/specials-history.json')
+
+// Every scrap of text Toast hands us goes through here before it reaches data.js.
+// Toast descriptions are typed into a POS field and come back with whatever the
+// kitchen pasted in — CRLF line breaks, tabs, stray control bytes. `\s+` covers
+// CR, LF, tab and U+2028/U+2029; the second pass drops the remaining C0/C1
+// controls and U+007F, which are invisible in the POS but render as tofu boxes.
+// Collapsing to single spaces changes no rendered output: `.special-desc` has no
+// `white-space: pre-*` rule, so the browser already collapsed these runs.
+export function normalizeToastText(v) {
+  return String(v == null ? '' : v)
+    .replace(/\s+/g, ' ')
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
+    .trim()
+}
+
+// Compile the candidate data.js before it is allowed to touch the disk.
+//
+// data.js is a plain <script> the browser parses in one shot: a single bad byte
+// anywhere in it is a SyntaxError that takes out window.FT_DATA and every helper
+// beside it, and the site renders blank. That is exactly what a raw CR in a Toast
+// description did on 2026-08-21, and it stayed live for 25 hours because nothing
+// between the bot and the browser ever tried to parse the file.
+//
+// vm.Script COMPILES the source and stops — it never runs it, and no context is
+// created for it to run in. This is a syntax check, not an eval.
+//
+// Throwing here is the point: the script exits non-zero having written nothing,
+// so the last-good data.js stays on disk, stays committed and stays live. A
+// malformed Toast description costs us a red workflow run instead of the site.
+function assertDataJsParses(text) {
+  try {
+    new vm.Script(text, { filename: 'data.js' })
+  } catch (err) {
+    throw new Error(
+      `Refusing to write data.js — the generated file is not valid JavaScript: ${err.message}\n` +
+        'The last-good data.js is untouched and stays live. This almost always means a ' +
+        'Toast description contains a character the serializer did not escape.'
+    )
+  }
+}
 
 const HOST = process.env.TOAST_HOSTNAME || 'https://ws-api.toasttab.com'
 const CLIENT_ID = process.env.TOAST_CLIENT_ID
@@ -105,7 +147,10 @@ export function containsMeat(desc) {
 export function classifyVeg(rawDescription, marker = VEG_MARKER) {
   const raw = String(rawDescription == null ? '' : rawDescription).trim()
   const hasMarker = raw.includes(marker)
-  const desc = hasMarker ? raw.split(marker).join('').replace(/\s+/g, ' ').trim() : raw
+  // Normalize on BOTH branches. The old code only cleaned the text when the veg
+  // marker was present, so a meat special's description reached data.js exactly
+  // as Toast typed it — which is how a CRLF got into "The Stanley Kowalski".
+  const desc = normalizeToastText(hasMarker ? raw.split(marker).join('') : raw)
   return { desc, veg: hasMarker || !containsMeat(desc) }
 }
 
@@ -289,7 +334,7 @@ function extractSpecials(payload) {
   const specials = kept.map((it) => {
     const { desc, veg } = classifyVeg(it.description)
     return {
-      name: it.name,
+      name: normalizeToastText(it.name),
       desc,
       veg,
       price: it.price,
@@ -324,7 +369,7 @@ function findMenuItem(payload, needle) {
 // 🥬 (U+1F96C) glyph Kara appends for a vegetarian soup, which the site renders
 // inline the same way it does on specials and menu items (there is no separate
 // veg flag). Only whitespace is normalised.
-const cleanFlavor = (d) => String(d == null ? '' : d).replace(/\s+/g, ' ').trim()
+const cleanFlavor = (d) => normalizeToastText(d)
 
 // Resolve a soup *size* modifier option (e.g. "Cup" / "Bowl") for an item and
 // return the option object, or null. Toast's /menus/v2 delivers the size group by
@@ -441,7 +486,7 @@ export function extractMuffin(payload, opts = {}) {
   if (!item) return null
   const muffin = {}
   if (item.price != null) muffin.price = item.price
-  const flavor = String(item.description == null ? '' : item.description).replace(/\s+/g, ' ').trim()
+  const flavor = normalizeToastText(item.description)
   if (flavor) muffin.flavor = flavor
   if (muffin.price == null && muffin.flavor == null) return null
   return muffin
@@ -530,6 +575,7 @@ async function main() {
     for (const f of orphans) await rm(resolve(ASSETS_DIR, f))
     if (orphans.length) console.log(`Pruned ${orphans.length} rotated-out special photo(s): ${orphans.join(', ')}`)
   }
+  assertDataJsParses(next)
   await writeFile(DATA_JS, next)
 
   // Append to the archive after data.js is written, so a special is only ever
