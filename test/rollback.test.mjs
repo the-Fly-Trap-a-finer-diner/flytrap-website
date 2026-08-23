@@ -124,6 +124,7 @@ async function scratchRemote() {
   await writeFile(join(work, 'assets', 'menu.json'), '{"menu":"good"}\n');
   await writeFile(join(work, 'assets', 'specials', 'toast-good.jpg'), 'good-image');
   await writeFile(join(work, 'docs', 'specials-history.json'), '[{"n":"good"}]\n');
+  await writeFile(join(work, 'sitemap.xml'), '<lastmod>2026-01-01</lastmod>\n');
   await g('add', '-A');
   await g('commit', '-m', 'good state');
   const lkgSha = (await g('rev-parse', 'HEAD')).stdout.trim();
@@ -137,6 +138,7 @@ async function addBadSync({ work, g }, author = 'flytrap-toast-bot') {
   await g('config', 'user.email', 'bot@theflytrapferndale.com');
   await writeFile(join(work, 'data.js'), 'window.FT_DATA = { specials: ["BROKEN"\n');
   await writeFile(join(work, 'assets', 'menu.json'), '{"menu":"bad"}\n');
+  await writeFile(join(work, 'sitemap.xml'), '<lastmod>2026-08-23</lastmod>\n');
   await g('add', '-A');
   await g('commit', '-m', 'chore(toast): sync menu + specials [skip ci]');
   await g('push', 'origin', 'main');
@@ -163,6 +165,9 @@ test('end to end: a bad bot sync is restored, paused and pushed', async () => {
   // Files are back to the good content.
   assert.equal(await readFile(join(ctx.work, 'data.js'), 'utf8'), 'window.FT_DATA = { specials: ["good"] };\n');
   assert.equal(await readFile(join(ctx.work, 'assets', 'menu.json'), 'utf8'), '{"menu":"good"}\n');
+  // The sitemap is a synced path too — left behind, a rollback would serve last
+  // week's specials stamped with this week's date.
+  assert.equal(await readFile(join(ctx.work, 'sitemap.xml'), 'utf8'), '<lastmod>2026-01-01</lastmod>\n');
 
   // The circuit breaker is set and explains itself.
   assert.ok(await exists(join(ctx.work, '.github', 'SYNC_PAUSED')));
@@ -229,4 +234,30 @@ test('end to end: a dry run decides but changes nothing', async () => {
   assert.equal(await exists(join(ctx.work, '.github', 'SYNC_PAUSED')), false);
   const { stdout: count } = await run('git', ['-C', ctx.remote, 'rev-list', '--count', 'main']);
   assert.equal(count.trim(), '2');
+});
+
+test('end to end: a synced path missing at the good commit does not abort the rollback', async () => {
+  // docs/specials-history.json only appeared in #137 and sitemap.xml became a
+  // synced path later still, so a last-known-good older than either is a real
+  // possibility. A single `git checkout` over the whole list aborts on the first
+  // missing path and silently rolls back nothing at all — the exact silent
+  // failure this whole mechanism exists to avoid.
+  const ctx = await scratchRemote();
+  await ctx.g('rm', '-q', 'sitemap.xml');
+  await ctx.g('commit', '-q', '-m', 'drop the sitemap');
+  await ctx.g('push', '-q', 'origin', 'main');
+  const lkgWithoutSitemap = (await ctx.g('rev-parse', 'HEAD')).stdout.trim();
+
+  await writeFile(join(ctx.work, 'sitemap.xml'), '<lastmod>2026-08-23</lastmod>\n');
+  const headSha = await addBadSync(ctx);
+
+  const { stdout } = await runRollback(ctx.work, { LKG_SHA: lkgWithoutSitemap, HEAD_SHA: headSha });
+  assert.match(stdout, /Automatic rollback: done/, 'the rollback must still run');
+  assert.match(stdout, /left as-is: sitemap\.xml/, 'and say what it could not restore');
+  assert.doesNotMatch(stdout, /Restored[^\n]*sitemap/, 'must not claim to have restored it');
+
+  // The paths that did exist are back.
+  assert.equal(await readFile(join(ctx.work, 'data.js'), 'utf8'), 'window.FT_DATA = { specials: ["good"] };\n');
+  const { stdout: remoteLog } = await run('git', ['-C', ctx.remote, 'log', '-1', '--format=%s']);
+  assert.match(remoteLog, /roll back to the last verified-good site/);
 });

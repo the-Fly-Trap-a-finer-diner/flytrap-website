@@ -609,7 +609,9 @@ async function main() {
   try {
     const sm = await readFile(SITEMAP_XML, 'utf8')
     const today = new Date().toISOString().slice(0, 10)
-    const next = sm.replace(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/, `<lastmod>${today}</lastmod>`)
+    // /g: the sitemap has one <url> today, but without it a second entry added
+    // later would silently keep a stale date while the first one moved.
+    const next = sm.replace(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g, `<lastmod>${today}</lastmod>`)
     if (next !== sm) {
       await writeFile(SITEMAP_XML, next)
       console.log(`Sitemap lastmod set to ${today}.`)

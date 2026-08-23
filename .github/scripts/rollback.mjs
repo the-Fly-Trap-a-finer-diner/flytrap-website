@@ -51,7 +51,15 @@ export const ROLLBACK_SUBJECT = 'revert(toast): roll back to the last verified-g
 // The exact paths the Toast sync writes, kept in step with the `git add` line in
 // toast-sync.yml. Restoring a subset would leave data.js describing photos that
 // are not there.
-export const SYNCED_PATHS = ['data.js', 'assets/menu.json', 'assets/specials', 'docs/specials-history.json']
+export const SYNCED_PATHS = [
+  'data.js',
+  'assets/menu.json',
+  'assets/specials',
+  'docs/specials-history.json',
+  // The sync stamps <lastmod> here to follow the specials. Left behind, a
+  // rollback would restore last week's specials under this week's date.
+  'sitemap.xml',
+]
 
 /**
  * Should we roll back? Pure, so the guards can be tested — they are the part
@@ -138,7 +146,27 @@ async function main() {
 
   // Restore only the sync's own files. Deliberately not a `git reset` — anything
   // a human landed alongside the bad sync stays.
-  await git('checkout', lkgSha, '--', ...SYNCED_PATHS)
+  //
+  // Path by path, skipping any that did not exist yet at the good commit. One
+  // `git checkout` over the whole list aborts if a single path is missing from
+  // that tree, which would take the entire rollback down: docs/specials-history.json
+  // only appeared in #137 and sitemap.xml became a synced path later still, so a
+  // last-known-good older than either is enough to trigger it. Failing to roll
+  // back at all is far worse than rolling back one file fewer.
+  const restored = []
+  const absent = []
+  for (const path of SYNCED_PATHS) {
+    const inTree = await git('ls-tree', '--name-only', lkgSha, '--', path)
+    if (!inTree) {
+      absent.push(path)
+      continue
+    }
+    await git('checkout', lkgSha, '--', path)
+    restored.push(path)
+  }
+  if (absent.length) {
+    console.log(`::warning::Not in ${lkgSha.slice(0, 12)}, left as-is: ${absent.join(', ')}`)
+  }
 
   // The circuit breaker. Without it the next scheduled sync re-pulls the same
   // bad Toast data, the rollback fires again, and the two trade commits every
@@ -166,7 +194,7 @@ async function main() {
 
   await git('config', 'user.name', 'flytrap-toast-bot')
   await git('config', 'user.email', 'bot@theflytrapferndale.com')
-  await git('add', PAUSE_FILE, ...SYNCED_PATHS)
+  await git('add', PAUSE_FILE, ...restored)
 
   if (!(await git('diff', '--cached', '--name-only'))) {
     if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, 'rolled-back=false\n')
@@ -184,7 +212,8 @@ async function main() {
     `${headSha} failed post-deploy verification, so the files the Toast sync owns`,
     `were restored from ${lkgSha}, the last commit confirmed working on the live site.`,
     '',
-    'Restored: ' + SYNCED_PATHS.join(', '),
+    'Restored: ' + restored.join(', ') +
+      (absent.length ? `\nNot present at that commit, left alone: ${absent.join(', ')}` : ''),
     '',
     'The Toast sync is paused until .github/SYNC_PAUSED is deleted, so the same bad',
     'pull cannot land again on the next run.',
@@ -212,7 +241,7 @@ async function main() {
   await report([
     '### Automatic rollback: done',
     '',
-    `Restored ${SYNCED_PATHS.join(', ')} from \`${lkgSha.slice(0, 12)}\` and pushed \`${newSha.slice(0, 12)}\`.`,
+    `Restored ${restored.join(', ')} from \`${lkgSha.slice(0, 12)}\` and pushed \`${newSha.slice(0, 12)}\`.`,
     '',
     deployNote,
     '',
