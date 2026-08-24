@@ -63,6 +63,7 @@ This flat layout is deliberate and enforced — see [AGENTS.md](../AGENTS.md).
 | `.github/scripts/toast-sync.mjs` | Pulls the standing menu from Toast → `assets/menu.json`. |
 | `.github/scripts/specials-sync.mjs` | Pulls weekly specials + soup + muffin → the marked blocks in `data.js`, downloads special photos, and appends to `docs/specials-history.json`. |
 | `.github/scripts/fixtures/*.json` | Sample Toast payloads for offline testing. |
+| `.github/scripts/precompile-jsx.mjs` | Transpiles the `.jsx` files into the deploy artifact so the browser never loads Babel. Deploy-only; the repo keeps its `.jsx`. |
 | `.github/scripts/site-health.mjs` | Probes the live site — fetches it, parses the live `data.js`, and loads the page in headless Chrome to confirm React mounts. Used by two workflows. |
 | `.github/scripts/lib/headless.mjs` | Minimal Chrome DevTools Protocol client over Node's built-in `WebSocket`. No Playwright, no `package.json`. |
 | `.github/scripts/rollback.mjs` | Restores the synced files from the last verified-good commit when a deploy fails verification. |
@@ -207,6 +208,40 @@ On push to `main` (and manual dispatch). `rsync`s the repo root into `_site`,
 excluding `.git`, `.github`, `.claude`, `docs`, `test`, `apps-script`, `AGENTS.md`,
 `README.md`, `ROADMAP.md`, `LICENSE`, `.gitignore`, `.image-slots.state.json`, then
 uploads and deploys. **Merging to `main` publishes immediately.**
+
+**It also precompiles the JSX.** `.github/scripts/precompile-jsx.mjs` transpiles
+the five `.jsx` files into plain `.js` inside `_site` and rewrites `index.html` to
+load those instead, dropping the `@babel/standalone` tag. The repo is untouched —
+this is not a build step for contributors, and nothing generated is committed.
+
+Why: the site otherwise downloads a 3 MB compiler and runs it over 75 KB of JSX
+before anything renders. Measured on a 4x-throttled CPU (Lighthouse's mobile
+default), median of 5 runs:
+
+| | in-browser Babel | precompiled |
+|---|---|---|
+| React mounted, first visit | 1515 ms | **343 ms** |
+| React mounted, repeat visit | 1145 ms | **137 ms** |
+| main thread blocked | 1210 ms | **217 ms** |
+
+The repeat-visit row is the important one: the HTTP cache removes Babel's
+download but not its parse-and-compile, so the cost is paid on every visit
+forever. Rendered DOM is byte-identical either way.
+
+**It cannot break the deploy.** The script rewrites `index.html` last, so any
+earlier failure leaves `_site` holding exactly what ships today — the step is
+`continue-on-error` and the script exits 0 with a warning. Verified by running it
+with the CDN unreachable: the artifact kept its `.jsx` files and Babel tag and
+still rendered.
+
+The Babel build is pinned by `index.html` itself — CI reuses that URL and
+verifies the download against the same SRI hash the browser enforces, so the
+transform cannot drift from what production would have done.
+
+A side effect worth knowing: the deployed page no longer loads Babel from unpkg
+at all, so an unpkg outage or an SRI mismatch on that file can no longer blank
+the site. React and ReactDOM are still loaded from unpkg, so the dependency is
+reduced, not removed.
 
 It also stamps `<lastmod>` in the published `sitemap.xml` with the date of the last
 commit that actually changed the page — deliberately *not* the deploy date, since a

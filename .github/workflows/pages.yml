@@ -29,6 +29,9 @@ jobs:
           # still materialises normally for the rsync below.
           fetch-depth: 0
           filter: blob:none
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
       - uses: actions/configure-pages@v6
       - name: Stage site
         run: |
@@ -47,6 +50,24 @@ jobs:
             --exclude='.gitignore' \
             --exclude='.image-slots.state.json' \
             ./ _site/
+
+      # Transpile the JSX ahead of time so visitors do not download and run a
+      # 3 MB compiler before the page renders. Measured on a 4x-throttled CPU —
+      # Lighthouse's mobile default — React mounts in 343 ms instead of 1515 ms,
+      # and 137 ms instead of 1145 ms on a repeat visit, because the HTTP cache
+      # removes Babel's download but not its parse-and-compile.
+      #
+      # The repo is untouched by this: it keeps its .jsx files and its Babel
+      # script tag, so `python3 -m http.server` still works with no tooling and
+      # AGENTS.md's no-build-step rule still holds for anyone working on the
+      # site. Only the staged artifact is transformed.
+      #
+      # continue-on-error, and the script exits 0 on failure by design: it
+      # rewrites index.html last, so a failure leaves _site holding exactly what
+      # ships today. The worst case is that the site keeps its current speed.
+      - name: Precompile the JSX
+        continue-on-error: true
+        run: node .github/scripts/precompile-jsx.mjs _site
 
       # Stamp <lastmod> with the date the page last actually changed.
       #
