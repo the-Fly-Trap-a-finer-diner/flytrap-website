@@ -10,7 +10,7 @@
 // everything that is wrong rather than just the first thing:
 //
 //   1. index      — / returns HTML with the #root mount point
-//   2. assets     — every <script src> and <link href> in index.html returns 200
+//   2. assets     — every local script, stylesheet, preload and icon returns 200
 //   3. data.js    — parses as JavaScript and assigns window.FT_DATA
 //   4. photos     — every photo: path in the live data.js returns 200
 //   5. render     — headless Chrome loads the page and React actually mounts
@@ -42,6 +42,7 @@ import { createHash } from 'node:crypto'
 import { writeFile, mkdtemp, appendFile, access } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { renderPage } from './lib/headless.mjs'
 
 const run = promisify(execFile)
@@ -87,21 +88,62 @@ async function checkIndex(state) {
 
 // 2. Every file index.html pulls in. A missing script is a blank page, and the
 //    load order in index.html IS the dependency graph, so one 404 breaks the rest.
+// Every local file index.html points at, whatever tag points at it.
+//
+// Exported and pure so the tag coverage can be tested without a live site —
+// this started as scripts and stylesheets only, and #142 quietly added three
+// <link rel="preload"> tags that nothing was checking. A preload pointing at a
+// 404 costs a wasted round trip and a console warning, and it is invisible
+// until someone opens devtools.
+//
+// Only same-origin references. A CDN going down is real but it is not ours to
+// fix, and failing the health check on unpkg's availability would page someone
+// who can do nothing about it.
+export function extractLocalRefs(html) {
+  const refs = []
+
+  for (const m of html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/gi)) {
+    refs.push({ ref: m[1], kind: 'script' })
+  }
+
+  // One pass over <link> tags rather than a regex per rel: rel and href appear
+  // in either order, and a per-rel pattern silently misses the ones nobody
+  // thought to add.
+  for (const m of html.matchAll(/<link\b[^>]*>/gi)) {
+    const tag = m[0]
+    const href = tag.match(/\bhref="([^"]+)"/i)
+    const rel = tag.match(/\brel="([^"]+)"/i)
+    if (!href || !rel) continue
+    const kind = rel[1].trim().toLowerCase()
+    if (['stylesheet', 'preload', 'icon', 'apple-touch-icon'].includes(kind)) {
+      refs.push({ ref: href[1], kind })
+    }
+  }
+
+  return refs.filter((r) => !/^https?:|^\/\//i.test(r.ref) && !r.ref.startsWith('data:'))
+}
+
+// 2. Every file index.html pulls in. A missing script is a blank page, and the
+//    load order in index.html IS the dependency graph, so one 404 breaks the rest.
+//    Stylesheets, preloads and icons ride along — cheap to check, and a 404 on
+//    any of them is a real defect even when the page still renders.
 async function checkAssets(state) {
   const html = state.indexHtml || ''
   if (!html) return skip('index.html was not fetched')
-  const refs = [
-    ...[...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1]),
-    ...[...html.matchAll(/<link[^>]+rel="stylesheet"[^>]*href="([^"]+)"/g)].map((m) => m[1]),
-  ].filter((u) => !/^https?:|^\/\//.test(u)) // local files only; CDNs are not ours to police
+  const refs = extractLocalRefs(html)
   if (!refs.length) return fail('index.html references no local scripts or stylesheets')
+
   const bad = []
-  for (const ref of refs) {
+  for (const { ref, kind } of refs) {
     const r = await get(ref, { text: false })
-    if (!r.ok) bad.push(`${ref} -> ${r.status}`)
+    if (!r.ok) bad.push(`${ref} (${kind}) -> ${r.status}`)
   }
-  return bad.length ? fail(`${bad.length}/${refs.length} referenced files missing: ${bad.join(', ')}`)
-    : pass(`all ${refs.length} referenced scripts and stylesheets return 200`)
+
+  const byKind = refs.reduce((acc, r) => ({ ...acc, [r.kind]: (acc[r.kind] || 0) + 1 }), {})
+  const tally = Object.entries(byKind).map(([k, n]) => `${n} ${k}`).join(', ')
+  return bad.length
+    ? fail(`${bad.length}/${refs.length} referenced files missing: ${bad.join(', ')}`)
+    : pass(`all ${refs.length} local references return 200 (${tally})`)
 }
 
 // 3. THE check for the 2026-08-21 outage. data.js is loaded as a plain <script>;
@@ -326,7 +368,12 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(String(err?.stack || err))
-  process.exit(1)
-})
+// Only probe when run as a command. extractLocalRefs is imported by the tests,
+// and without this guard importing the module fires a full live health check —
+// 35 seconds and a real request to production on every test run.
+if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
+  main().catch((err) => {
+    console.error(String(err?.stack || err))
+    process.exit(1)
+  })
+}

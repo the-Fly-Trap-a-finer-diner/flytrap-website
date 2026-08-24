@@ -34,6 +34,7 @@
 // error — the caller fails the run on the health check, not on this.
 
 import { execFile } from 'node:child_process'
+import { pathToFileURL } from 'node:url'
 import { promisify } from 'node:util'
 import { writeFile, appendFile, access } from 'node:fs/promises'
 
@@ -250,7 +251,7 @@ async function main() {
   ])
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1] || '').href) {
   main().catch((err) => {
     // A failed rollback must not mask the outage it was reacting to. Report and
     // exit clean; the caller fails the run on the health check.

@@ -22,6 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history so the sitemap step can find the last commit that
+          # actually changed the page. blob:none keeps that cheap — the walk
+          # needs commits and trees, not file contents, and the working tree
+          # still materialises normally for the rsync below.
+          fetch-depth: 0
+          filter: blob:none
       - uses: actions/configure-pages@v6
       - name: Stage site
         run: |
@@ -40,6 +47,43 @@ jobs:
             --exclude='.gitignore' \
             --exclude='.image-slots.state.json' \
             ./ _site/
+
+      # Stamp <lastmod> with the date the page last actually changed.
+      #
+      # specials-sync writes this into the repo copy when it publishes, which
+      # covers the specials — but the specials are not the only thing that
+      # changes. #142 rewrote the schema, the preloads and every dish entry and
+      # the sitemap still read 2026-08-10, two weeks stale, because Toast had
+      # not moved. Anything that ships without touching Toast has the same
+      # problem.
+      #
+      # Deliberately the last *content* commit, not the deploy date. A CI-only
+      # or docs-only merge deploys the site without changing the page, and a
+      # lastmod that reads "today" on every deploy is a lastmod Google learns to
+      # ignore. Only the artifact is stamped; the repo copy is left alone.
+      - name: Stamp the sitemap with the last content change
+        run: |
+          set -euo pipefail
+          LAST=$(git log -1 --format=%cs -- \
+            index.html data.js '*.jsx' '*.css' assets llms.txt 404.html)
+          if [ -z "$LAST" ]; then
+            echo "::warning::No content commit found — leaving sitemap lastmod as committed."
+            exit 0
+          fi
+          if [ ! -f _site/sitemap.xml ]; then
+            echo "::warning::No _site/sitemap.xml to stamp."
+            exit 0
+          fi
+          # Write through a temp file rather than sed -i: the -i flag takes a
+          # mandatory backup suffix on BSD sed and none on GNU, so the in-place
+          # form silently does nothing on one of the two. This works on both,
+          # which means it can be tested off the runner.
+          sed -E "s#<lastmod>[0-9]{4}-[0-9]{2}-[0-9]{2}</lastmod>#<lastmod>${LAST}</lastmod>#g" \
+            _site/sitemap.xml > _site/sitemap.xml.tmp
+          mv _site/sitemap.xml.tmp _site/sitemap.xml
+          echo "Sitemap lastmod stamped $LAST" >> "$GITHUB_STEP_SUMMARY"
+          grep lastmod _site/sitemap.xml
+
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
