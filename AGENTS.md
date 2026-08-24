@@ -48,6 +48,9 @@ Add new sections as new `.jsx` files at root + new `<script type="text/babel">` 
 
 - `main` auto-deploys to GitHub Pages via `.github/workflows/pages.yml`. Artifact = repo root staged into `_site` (excludes `.git`, `.github`, `.claude`, docs, tooling).
 - Design syncs land on `design-sync` branch first. Review + PR to `main` before going live.
+- **Every deploy is verified in a real browser** by `post-deploy-verify.yml`. If the page fails to render, a bot-authored deploy is rolled back automatically and the Toast sync is paused. Do not treat a green `pages` run as proof the site works — check the verify run.
+- **`sitemap.xml` is machine-written at deploy time.** The committed `<lastmod>` is a placeholder that is never served; editing it by hand does nothing.
+- **`.github/SYNC_PAUSED`, if present, means an automatic rollback fired.** Do not delete it to "unblock" a sync without fixing the underlying cause first — see [docs/SPECIALS_SYNC.md](docs/SPECIALS_SYNC.md#the-sync-is-paused--what-now).
 
 ## Code style
 

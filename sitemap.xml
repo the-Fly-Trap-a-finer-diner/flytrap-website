@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  <lastmod> below is a placeholder. The Pages deploy rewrites it in the
+  published artifact with the date of the last commit that actually changed
+  the page (see .github/workflows/pages.yml), so the committed value here is
+  never what the site serves. Editing it by hand has no effect.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://theflytrapferndale.com/</loc>

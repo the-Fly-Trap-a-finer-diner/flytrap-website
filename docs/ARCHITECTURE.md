@@ -1,6 +1,6 @@
 # Architecture — how the site is laid out and wired
 
-Everything below describes `main` as of 2026-08-05.
+Everything below describes `main` as of 2026-08-24.
 
 ---
 
@@ -15,6 +15,17 @@ Toast POS ──[GitHub Action, every 15 min]──▶ assets/menu.json  +  data
               index.html ──▶ React UMD + Babel (CDN) ──▶ .jsx files transpiled in the browser
                                                      ▼
                                      one HTML page, five sections + one hash route
+```
+
+Every deploy is then verified, and the live site is checked every 15 minutes:
+
+```
+        Pages deploy ──▶ [post-deploy-verify] ──┬── pass ──▶ record last-known-good
+                                                └── fail ──▶ roll back + pause the sync
+                                                              + open an incident issue
+
+  cron, every 15 min ──▶ [site-health] ─────────┬── pass ──▶ close any open incident
+                                                └── fail ──▶ open/update the incident
 ```
 
 No build step exists anywhere. The files in the repo root **are** the deployed
@@ -52,9 +63,16 @@ This flat layout is deliberate and enforced — see [AGENTS.md](../AGENTS.md).
 | `.github/scripts/toast-sync.mjs` | Pulls the standing menu from Toast → `assets/menu.json`. |
 | `.github/scripts/specials-sync.mjs` | Pulls weekly specials + soup + muffin → the marked blocks in `data.js`, downloads special photos, and appends to `docs/specials-history.json`. |
 | `.github/scripts/fixtures/*.json` | Sample Toast payloads for offline testing. |
+| `.github/scripts/site-health.mjs` | Probes the live site — fetches it, parses the live `data.js`, and loads the page in headless Chrome to confirm React mounts. Used by two workflows. |
+| `.github/scripts/lib/headless.mjs` | Minimal Chrome DevTools Protocol client over Node's built-in `WebSocket`. No Playwright, no `package.json`. |
+| `.github/scripts/rollback.mjs` | Restores the synced files from the last verified-good commit when a deploy fails verification. |
+| `.github/actions/incident/` | Composite action that opens, updates and closes the incident issue. |
 | `.github/workflows/toast-sync.yml` | The scheduled sync job. |
 | `.github/workflows/pages.yml` | Deploy to GitHub Pages. |
-| `.github/workflows/guardrails.yml` | Mechanical enforcement of the stack rules. |
+| `.github/workflows/guardrails.yml` | Mechanical enforcement of the stack rules, plus the test suite. |
+| `.github/workflows/post-deploy-verify.yml` | Proves the site works after every deploy; rolls back if it does not. |
+| `.github/workflows/site-health.yml` | Scheduled uptime monitoring with alerting. |
+| `.github/SYNC_PAUSED` | Only present after an automatic rollback. While it exists the Toast sync skips every run. |
 | `apps-script/lib/` | Shared block-building helpers. `specials.js` is imported by `.github/scripts/specials-sync.mjs` and the tests; `github.js` by `test/github.test.mjs`. The Apps Script web app that gave the directory its name is gone — only the library remains. |
 | `test/*.mjs` | `node:test` unit tests for the specials/soup block builders. |
 | `.claude/` | Agent tooling: the design-sync skill and its state, launch config, archived plans/reports. |
@@ -146,21 +164,36 @@ Cron `2,17,32,47 * * * *` (≈ every 15 min, deliberately offset off the top of 
 hour because GitHub drops congested sub-hourly runs), plus manual dispatch with a
 `dry_run` toggle.
 
-One job, in order:
+Two jobs. `guard` first: if `.github/SYNC_PAUSED` exists the `sync` job is
+**skipped** (not failed — a red X four times an hour for the length of a pause
+would drown the incident it belongs to). That file is written by an automatic
+rollback and removed by a human. See *Rollback* below.
+
+Then `sync`, in order:
 
 1. `toast-sync.mjs` — auth, `GET /menus/v2/metadata` + `/menus/v2/menus`, write
    `assets/menu.json`, and stash the raw payload in a temp file.
 2. `specials-sync.mjs` — reuse that payload (Toast rate-limits `/menus` to 1 req/sec,
    so a second call would 429), rewrite the `SPECIALS` and `EXTRAS` blocks of
    `data.js`, download any new special photo into `assets/specials/`.
-3. Commit `assets/menu.json data.js assets/specials` **only if something changed**,
-   `git pull --rebase` onto `main`, push as `flytrap-toast-bot`.
+3. Commit `assets/menu.json data.js assets/specials docs/specials-history.json`
+   **only if something changed**, `git pull --rebase` onto `main`, push as
+   `flytrap-toast-bot`. This path list is mirrored by `SYNCED_PATHS` in
+   `rollback.mjs`, and a test asserts the two never drift — if they did, a
+   rollback would restore some of a bad sync and leave the rest.
 4. Explicitly dispatch the Pages workflow (a `GITHUB_TOKEN` commit doesn't trigger
    other workflows).
 
 **Failure behaviour:** every script throws *before* writing on any auth/API/download
 error, so the last good committed content stays live. A Toast outage cannot blank the
 site. Without the `TOAST_*` secrets the whole workflow is a no-op.
+
+`specials-sync.mjs` also **compiles the candidate `data.js` and refuses to write it
+if it does not parse.** `data.js` is a plain `<script>`: one stray byte is a
+SyntaxError that takes out `window.FT_DATA` and blanks the page. That is exactly
+what a bare CR in a Toast description did on 2026-08-21 (25 hours) and again on
+2026-08-23 (2 hours). A malformed description now costs a red workflow run instead
+of the site.
 
 Secrets: `TOAST_CLIENT_ID`, `TOAST_CLIENT_SECRET`, `TOAST_RESTAURANT_GUID`.
 Optional: `TOAST_HOSTNAME`, `TOAST_VEG_MARKER`, `TOAST_SPECIALS_GROUP`,
@@ -174,6 +207,16 @@ On push to `main` (and manual dispatch). `rsync`s the repo root into `_site`,
 excluding `.git`, `.github`, `.claude`, `docs`, `test`, `apps-script`, `AGENTS.md`,
 `README.md`, `ROADMAP.md`, `LICENSE`, `.gitignore`, `.image-slots.state.json`, then
 uploads and deploys. **Merging to `main` publishes immediately.**
+
+It also stamps `<lastmod>` in the published `sitemap.xml` with the date of the last
+commit that actually changed the page — deliberately *not* the deploy date, since a
+CI-only or docs-only merge deploys the site without changing it, and a `lastmod`
+reading "today" on every deploy is one Google learns to ignore. **This is the only
+writer**; the committed `sitemap.xml` holds a placeholder that is never served, and
+editing it by hand does nothing.
+
+Checkout uses `fetch-depth: 0` with `filter: blob:none` so the history walk is
+available without pulling every blob.
 
 ### `guardrails.yml` — CI
 
@@ -189,26 +232,121 @@ It fails the build on:
 4. The canonical Toast ordering URL missing from `Nav.jsx` or `App.jsx`.
 5. Re-introduced `special-badge` markup or an `eyebrow:` field in `data.js`.
 6. A specials photo referenced in `data.js` but not committed.
-7. A committed `.env`, or any reference to the legacy Bolt preview domain (the
+7. `data.js` or `image-slot.js` failing `node --check`, or a bare carriage return
+   in any tracked text file. Both added after the CR outage: inside a JS string a
+   CR is a line terminator, so it breaks the parse.
+8. A committed `.env`, or any reference to the legacy Bolt preview domain (the
    check greps the whole repo for the literal hostname, **including markdown** — so
    don't type it in a doc either).
 
+A second job, `tests`, runs `node --test test/*.test.mjs`. The suite existed long
+before CI ran it, which is how a serializer bug shipped past a green pipeline.
+
 **Branch protection.** A repository ruleset named "main protection" is active on
-`main`: it blocks **deletion** and **force-pushes**. It deliberately does *not*
-require the `guardrails` check to pass, because that would also block the Toast
-bot — the bot pushes straight to `main` with `GITHUB_TOKEN`, its commits carry
-`[skip ci]` so `guardrails` never runs on them, and a personal (non-organisation)
-repo cannot grant the GitHub Actions integration a ruleset bypass.
+`main`: it blocks **deletion** and **force-pushes**. It does *not* require the
+`guardrails` check to pass, because that would also block the Toast bot — the bot
+pushes straight to `main` with `GITHUB_TOKEN` and its commits carry `[skip ci]`, so
+`guardrails` never runs on them.
 
-To require the check as well, one of these has to happen first:
-1. Give the Toast workflow a **PAT belonging to an admin** to push with, and add a
-   `RepositoryRole` admin bypass to the ruleset; or
-2. Change the workflow to open a **PR** instead of pushing to `main` — which means
-   the menu no longer updates without a human, so it defeats the point; or
-3. Move the repo into an **organisation**, where the GitHub Actions integration can
-   be listed as a bypass actor directly.
+This repo now lives in the **`the-Fly-Trap-a-finer-diner` organisation**, which
+means the GitHub Actions integration *can* be listed as a ruleset bypass actor —
+the option an earlier version of this document listed as future work. Requiring the
+check is therefore now possible: add Actions as a bypass actor, then add a required
+status check for `guardrails`. Not done yet; it is a repo-settings change, not a
+code one.
 
-Until then `guardrails` reports on every PR but does not mechanically block a merge.
+Note that requiring `guardrails` would not have caught either CR outage anyway —
+`[skip ci]` keeps CI off the bot's commits entirely. The gates that actually cover
+the bot are the pre-write parse check in `specials-sync.mjs` and
+`post-deploy-verify.yml` below.
+
+### `post-deploy-verify.yml` — did the deploy actually work
+
+Runs on `workflow_run` after **Deploy to GitHub Pages** completes. Keyed off the
+deploy rather than the push, because the sync bot's `[skip ci]` suppresses every
+push-triggered workflow — and this way it covers every route to production: the
+bot, a merged PR, a manual dispatch.
+
+It runs `site-health.mjs`, which makes six checks and reports all of them even
+after one fails:
+
+| Check | What it proves |
+|---|---|
+| `index` | `/` returns HTML with the `#root` mount point |
+| `assets` | every local script, stylesheet, preload and icon returns 200 |
+| `data.js` | parses as JavaScript and assigns `window.FT_DATA` |
+| `photos` | every `photo:` path in the live `data.js` returns 200 |
+| `render` | headless Chrome loads the page and React actually mounts |
+| `freshness` | the live `data.js` is the one this deploy pushed |
+
+`render` is the one that matters most. Every other check inspects bytes; this runs
+the real page in a real browser — Babel transpiles the JSX, React mounts, `data.js`
+executes — and looks at the resulting DOM. A blank site fails it regardless of
+cause. **Status codes are not enough:** during both CR outages every file returned
+200 while the page rendered blank.
+
+It drives Chrome over the DevTools Protocol using Node's built-in `WebSocket`
+(`lib/headless.mjs`). `chrome --dump-dom` was tried first and rejected: it
+serializes before in-browser Babel has finished fetching and transforming the
+`.jsx` files, so it reports an empty `#root` on a healthy site.
+
+On success it records the commit in `refs/verified/last-known-good` — a custom ref,
+so it clutters no clones and triggers no workflows.
+
+### Rollback — `rollback.mjs`
+
+When verification fails on a **bot-authored** deploy, the files the sync owns are
+restored from `refs/verified/last-known-good`, committed, pushed, and Pages is
+redeployed explicitly (a `GITHUB_TOKEN` push raises no events).
+
+Guards, in precedence order. Each exists to stop it doing something worse than the
+outage it is fixing:
+
+| Guard | Why |
+|---|---|
+| already paused | An earlier rollback is uncleared. Hands off. |
+| no last-known-good | Nothing to roll back to. |
+| this deploy *is* a rollback | Rolling back further would loop. |
+| head == last-known-good | Content did not change — it is Pages, DNS or the cert. |
+| **human author** | Never quietly undo someone's merge. |
+
+Two details that are easy to get wrong, and are the way they are on purpose:
+
+- **It restores files, it does not `git revert`.** Every sync rewrites the same line
+  of `data.js`, so reverting anything but the tip conflicts.
+- **It targets a recorded good commit, not `HEAD~1`.** During the first outage two
+  syncs were broken back to back, so a one-step rollback would have landed on
+  another blank site.
+
+A rollback writes **`.github/SYNC_PAUSED`**, which stops the Toast sync. Without it
+the next run re-pulls the same bad Toast data and the two trade commits every
+fifteen minutes. Clearing it is a deliberate human act — see
+[SPECIALS_SYNC.md](SPECIALS_SYNC.md#the-sync-is-paused--what-now).
+
+### `site-health.yml` — is the site up right now
+
+Cron `7,22,37,52 * * * *`, offset from the sync's `2,17,32,47` so a check never
+lands mid-deploy. Runs the same `site-health.mjs`; a monitor that checks something
+different from what the deploy gate checks is one you cannot reason about.
+
+Catches what the deploy gate cannot: an expired cert, a Pages outage, a DNS change,
+a CDN serving a stale broken copy — and a site that was fine at deploy time and
+broke an hour later.
+
+**Alerting.** On failure `.github/actions/incident` opens one GitHub issue labelled
+`site-down` and assigns it, which is what sends the email. Assignees come from the
+`INCIDENT_ASSIGNEES` repo variable, defaulting to `ryankolean,smcclanaghan76`.
+
+Chosen over email or a push service because it needs no secrets and leaves an audit
+trail. The dedupe is the part that makes it survivable: one issue per outage (found
+by a hidden marker in the body, so renaming it does not create a second), body
+refreshed every run, **comment at most once an hour**, closed automatically on
+recovery with the outage duration. Four runs an hour with no dedupe would be 96
+issues a day and everyone would mute the repo.
+
+`post-deploy-verify.yml` uses the same action, so a broken deploy and a broken site
+are one thread — and a deploy that fixes an outage closes the issue the monitor
+opened.
 
 ### `apps-script/lib/` — shared helpers, not an app
 

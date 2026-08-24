@@ -57,9 +57,6 @@ export const SYNCED_PATHS = [
   'assets/menu.json',
   'assets/specials',
   'docs/specials-history.json',
-  // The sync stamps <lastmod> here to follow the specials. Left behind, a
-  // rollback would restore last week's specials under this week's date.
-  'sitemap.xml',
 ]
 
 /**
@@ -151,9 +148,9 @@ async function main() {
   // Path by path, skipping any that did not exist yet at the good commit. One
   // `git checkout` over the whole list aborts if a single path is missing from
   // that tree, which would take the entire rollback down: docs/specials-history.json
-  // only appeared in #137 and sitemap.xml became a synced path later still, so a
-  // last-known-good older than either is enough to trigger it. Failing to roll
-  // back at all is far worse than rolling back one file fewer.
+  // only appeared in #137, so a last-known-good older than that is enough to
+  // trigger it, and the same applies to any path added later. Failing to roll back
+  // at all is far worse than rolling back one file fewer.
   const restored = []
   const absent = []
   for (const path of SYNCED_PATHS) {

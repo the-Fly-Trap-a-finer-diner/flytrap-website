@@ -50,9 +50,8 @@ jobs:
 
       # Stamp <lastmod> with the date the page last actually changed.
       #
-      # specials-sync writes this into the repo copy when it publishes, which
-      # covers the specials — but the specials are not the only thing that
-      # changes. #142 rewrote the schema, the preloads and every dish entry and
+      # The only writer. specials-sync used to stamp the repo copy too, which
+      # covered the specials but nothing else. #142 rewrote the schema, the preloads and every dish entry and
       # the sitemap still read 2026-08-10, two weeks stale, because Toast had
       # not moved. Anything that ships without touching Toast has the same
       # problem.
@@ -64,6 +63,10 @@ jobs:
       - name: Stamp the sitemap with the last content change
         run: |
           set -euo pipefail
+          # %cs renders in the COMMIT's own timezone, not UTC. A commit made at
+          # 00:50 UTC from a -04:00 machine reads as the previous day, which looks
+          # like the stamp failed but is not — and for a Michigan restaurant the
+          # local date is the more honest answer anyway.
           LAST=$(git log -1 --format=%cs -- \
             index.html data.js '*.jsx' '*.css' assets llms.txt 404.html)
           if [ -z "$LAST" ]; then
