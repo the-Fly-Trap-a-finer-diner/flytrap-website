@@ -127,7 +127,7 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           set -euo pipefail
-          git add assets/menu.json data.js assets/specials docs/specials-history.json sitemap.xml
+          git add assets/menu.json data.js assets/specials docs/specials-history.json
           if git diff --cached --quiet; then
             echo "No Toast changes — skipping."
             echo "changed=false" >> "$GITHUB_OUTPUT"
