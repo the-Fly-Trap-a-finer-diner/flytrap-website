@@ -268,5 +268,25 @@
     "veg": true,
     "photo": "assets/specials/toast-the-eastern-seaboard.jpg",
     "photoBlob": "23554c250f3024d0aa079d5da1b3b0fccc947d75"
+  },
+  {
+    "firstSeen": "2026-08-28",
+    "lastSeen": "2026-08-28",
+    "name": "The Summer Bishil",
+    "desc": "Chana dal, gunpowder spice roasted sweet potatoes, spinach, mushrooms and paneer cheese rolled up in a whole wheat wrap with a dollop of cashew mint chutney🥬.",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-summer-bishil.jpg",
+    "photoBlob": "66afeea388f12c98fd925d52dea056622959ea2f"
+  },
+  {
+    "firstSeen": "2026-08-28",
+    "lastSeen": "2026-08-28",
+    "name": "The Carl Weathers",
+    "desc": "Creole shrimp and roasted corn cakes served up with eggs how you like 'em, green tomato cocktail sauce and field greens tossed in a tomato vinaigrette; yup, toast!",
+    "price": "16.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-carl-weathers.jpg",
+    "photoBlob": "61b047a63a7627929e470e471602ec7c4ed6beb2"
   }
 ]
