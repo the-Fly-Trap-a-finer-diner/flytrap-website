@@ -115,7 +115,6 @@ window.FT_DATA = {
   weekOf: "Week of July 6",
   specials: [
     { id: "special-1", name: "The Summer Bishil", desc: "Chana dal, gunpowder spice roasted sweet potatoes, spinach, mushrooms and paneer cheese rolled up in a whole wheat wrap with a dollop of cashew mint chutney🥬.", veg: true, photo: "assets/specials/toast-the-summer-bishil.jpg", price: "14.95" },
-    { id: "special-2", name: "The Carl Weathers", desc: "Creole shrimp and roasted corn cakes served up with eggs how you like 'em, green tomato cocktail sauce and field greens tossed in a tomato vinaigrette; yup, toast!", veg: false, photo: "assets/specials/toast-the-carl-weathers.jpg", price: "16.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
