@@ -114,12 +114,14 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Summer Bishil", desc: "Chana dal, gunpowder spice roasted sweet potatoes, spinach, mushrooms and paneer cheese rolled up in a whole wheat wrap with a dollop of cashew mint chutney🥬.", veg: true, photo: "assets/specials/toast-the-summer-bishil.jpg", price: "14.95" },
+    { id: "special-1", name: "The Diaspora", desc: "House made Hmong style lemongrass pork sausage, eggs how you like 'em and red chili baby bok choy all on a bed of ginger congee. How about toast?", veg: false, photo: "assets/specials/toast-the-diaspora.jpg", price: "15.95" },
+    { id: "special-2", name: "Che Figata!", desc: "A rumble of eggs with proccoli rabe, oven dried tomato and red onion. Topped with shipped asiago, ricotta and italian chili crisp; browns and toast.🥬", veg: true, photo: "", price: "13.95" },
+    { id: "special-3", name: "Special Sausage", desc: "", veg: true, photo: "", price: "6" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Lemon Pistachio Crumble🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Smoked Mushroom Bisque 🥬", available: true, cup: "5.00", bowl: "6.00" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Plum Ginger🥬", price: "0.99" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekend! 🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the

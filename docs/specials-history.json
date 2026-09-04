@@ -288,5 +288,35 @@
     "veg": false,
     "photo": "assets/specials/toast-the-carl-weathers.jpg",
     "photoBlob": "61b047a63a7627929e470e471602ec7c4ed6beb2"
+  },
+  {
+    "firstSeen": "2026-09-04",
+    "lastSeen": "2026-09-04",
+    "name": "The Diaspora",
+    "desc": "House made Hmong style lemongrass pork sausage, eggs how you like 'em and red chili baby bok choy all on a bed of ginger congee. How about toast?",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-diaspora.jpg",
+    "photoBlob": "2cd0077934352f2c1d622c250d736663a93fa990"
+  },
+  {
+    "firstSeen": "2026-09-04",
+    "lastSeen": "2026-09-04",
+    "name": "Che Figata!",
+    "desc": "A rumble of eggs with proccoli rabe, oven dried tomato and red onion. Topped with shipped asiago, ricotta and italian chili crisp; browns and toast.🥬",
+    "price": "13.95",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-04",
+    "lastSeen": "2026-09-04",
+    "name": "Special Sausage",
+    "desc": "",
+    "price": "6",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
   }
 ]
