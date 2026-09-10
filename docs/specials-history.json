@@ -318,5 +318,15 @@
     "veg": true,
     "photo": "",
     "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-10",
+    "lastSeen": "2026-09-10",
+    "name": "Spinach Artichoke Dip Rumble?!",
+    "desc": "Roasted Artichokes, Spinach, Ricotta, Feta and Red Onion Rumbled with Eggs; comes with spuds and toast.🥬",
+    "price": "13.95",
+    "veg": true,
+    "photo": "assets/specials/toast-spinach-artichoke-dip-rumble.jpg",
+    "photoBlob": "d7c82eeeed15c4b5e27f3c8d470cfc31c0629e41"
   }
 ]

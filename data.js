@@ -114,9 +114,7 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Diaspora", desc: "House made Hmong style lemongrass pork sausage, eggs how you like 'em and red chili baby bok choy all on a bed of ginger congee. How about toast?", veg: false, photo: "assets/specials/toast-the-diaspora.jpg", price: "15.95" },
-    { id: "special-2", name: "Che Figata!", desc: "A rumble of eggs with proccoli rabe, oven dried tomato and red onion. Topped with shipped asiago, ricotta and italian chili crisp; browns and toast.🥬", veg: true, photo: "", price: "13.95" },
-    { id: "special-3", name: "Special Sausage", desc: "", veg: true, photo: "", price: "6" },
+    { id: "special-1", name: "Spinach Artichoke Dip Rumble?!", desc: "Roasted Artichokes, Spinach, Ricotta, Feta and Red Onion Rumbled with Eggs; comes with spuds and toast.🥬", veg: true, photo: "assets/specials/toast-spinach-artichoke-dip-rumble.jpg", price: "13.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
