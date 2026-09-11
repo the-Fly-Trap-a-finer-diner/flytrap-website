@@ -328,5 +328,25 @@
     "veg": true,
     "photo": "assets/specials/toast-spinach-artichoke-dip-rumble.jpg",
     "photoBlob": "d7c82eeeed15c4b5e27f3c8d470cfc31c0629e41"
+  },
+  {
+    "firstSeen": "2026-09-11",
+    "lastSeen": "2026-09-11",
+    "name": "The Emilio Delgado",
+    "desc": "Eggs how you like 'em sitting atop a bowl of chicken and white bean chile verde, a cheesy quesdilla, roasted corn salsa and sour cream.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-emilio-delgado.jpg",
+    "photoBlob": "71f917c2a57d00fedfdd7ef22f198ee65cb959ae"
+  },
+  {
+    "firstSeen": "2026-09-11",
+    "lastSeen": "2026-09-11",
+    "name": "The Lake Plains",
+    "desc": "",
+    "price": "13.95",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
   }
 ]
