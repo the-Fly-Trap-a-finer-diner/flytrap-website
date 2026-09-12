@@ -119,8 +119,8 @@ window.FT_DATA = {
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Plum Ginger🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Field Pea and Roasted Tomato 🥬", available: true, cup: "5.00", bowl: "6.00" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Peach Crumble 🥬", price: "0.99" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No Soup on the weekend! 🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the
