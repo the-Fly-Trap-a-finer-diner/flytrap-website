@@ -13,7 +13,7 @@ name: Post-deploy verify
 #   Tests       73 of them, covering this exact serializer, never run in CI
 #
 # "Deploy to GitHub Pages" dispatches this as its last step, which covers every
-# path to production — the Toast bot, a merged PR, a manual dispatch — instead
+# path to production - the Toast bot, a merged PR, a manual dispatch - instead
 # of only the sync. [skip ci] cannot suppress it, because it keys off the deploy
 # workflow rather than off the push.
 #

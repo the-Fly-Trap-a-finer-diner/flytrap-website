@@ -264,7 +264,7 @@ the bot are the pre-write parse check in `specials-sync.mjs` and
 
 Dispatched by **Deploy to GitHub Pages** as its last step, which passes the SHA
 it built as `deployed_sha`. Keyed off the deploy rather than the push, because
-the sync bot's `[skip ci]` suppresses every push-triggered workflow — and this
+the sync bot's `[skip ci]` suppresses every push-triggered workflow - and this
 way it covers every route to production: the bot, a merged PR, a manual dispatch.
 
 It originally keyed off `workflow_run` on the deploy, which went silent on
@@ -273,7 +273,7 @@ started, and every deploy from that date was dispatched by the bot's token. The
 gate was dead for 19 days, including the 2026-09-11 deploy that shipped the wrong
 commit. An explicit dispatch cannot be suppressed that way.
 
-A dispatch without `deployed_sha` — a human poking the button — skips the
+A dispatch without `deployed_sha` - a human poking the button - skips the
 `freshness` check and the rollback, since main's tip may legitimately be ahead of
 what is live.
 

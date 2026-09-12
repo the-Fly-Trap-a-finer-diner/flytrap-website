@@ -147,7 +147,7 @@ jobs:
       # `--ref main` makes GitHub resolve the branch to a SHA at dispatch time,
       # and that resolution lags the push by a second or two. On 2026-09-11 the
       # dispatch landed 3s after the push, resolved to the PARENT commit, and
-      # deployed the previous sync's specials — a green run shipping stale
+      # deployed the previous sync's specials - a green run shipping stale
       # content, with no self-healing: the next run only commits if Toast moves
       # again, so the site stayed a sync behind. Wait for the API to actually see
       # the pushed SHA before dispatching. workflow_dispatch only accepts a

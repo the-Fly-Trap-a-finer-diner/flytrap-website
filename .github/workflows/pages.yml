@@ -97,14 +97,14 @@ jobs:
 
       # Verification is dispatched from here rather than keyed to this workflow
       # with `workflow_run`, because workflow_run never fires for a run that
-      # GITHUB_TOKEN started — and the Toast bot dispatches this workflow with
+      # GITHUB_TOKEN started - and the Toast bot dispatches this workflow with
       # exactly that token. Keyed the old way, the gate went quiet on 2026-08-24
       # and stayed quiet through a deploy that shipped the wrong commit.
       #
       # Passing the SHA is what makes it a gate rather than a ping: given one,
       # the verify asserts the live site actually serves this commit, and rolls
       # back to the last verified-good one if it does not. Do not drop this step
-      # or the `deployed_sha` argument — a deploy stops being checked.
+      # or the `deployed_sha` argument - a deploy stops being checked.
       - name: Verify what just went live
         env:
           GH_TOKEN: ${{ github.token }}
