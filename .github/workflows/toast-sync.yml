@@ -143,8 +143,31 @@ jobs:
 
       # GITHUB_TOKEN commits don't trigger other workflows, so kick Pages
       # explicitly when something actually changed.
+      #
+      # `--ref main` makes GitHub resolve the branch to a SHA at dispatch time,
+      # and that resolution lags the push by a second or two. On 2026-09-11 the
+      # dispatch landed 3s after the push, resolved to the PARENT commit, and
+      # deployed the previous sync's specials - a green run shipping stale
+      # content, with no self-healing: the next run only commits if Toast moves
+      # again, so the site stayed a sync behind. Wait for the API to actually see
+      # the pushed SHA before dispatching. workflow_dispatch only accepts a
+      # branch or tag as `ref`, so the SHA cannot simply be pinned.
       - name: Trigger Pages deploy
         if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run "Deploy to GitHub Pages" --ref main
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          for i in $(seq 1 30); do
+            SEEN=$(gh api "repos/$REPO/commits/main" --jq .sha 2>/dev/null || true)
+            [ "$SEEN" = "$SHA" ] && break
+            if [ "$i" -eq 30 ]; then
+              echo "::error::main still reads $SEEN after 60s, expected $SHA. Not dispatching a deploy that would ship stale content."
+              exit 1
+            fi
+            sleep 2
+          done
+          gh workflow run "Deploy to GitHub Pages" --ref main
+          echo "Dispatched Pages deploy for $SHA." >> "$GITHUB_STEP_SUMMARY"
