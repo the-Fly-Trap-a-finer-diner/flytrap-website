@@ -12,10 +12,16 @@ name: Post-deploy verify
 #   Pages       rsync + upload. Never looks at what it is shipping
 #   Tests       73 of them, covering this exact serializer, never run in CI
 #
-# This runs on `workflow_run` after "Deploy to GitHub Pages" completes, which
-# covers every path to production — the Toast bot, a merged PR, a manual
-# dispatch — instead of only the sync. [skip ci] cannot suppress it, because it
-# keys off the deploy workflow rather than off the push.
+# "Deploy to GitHub Pages" dispatches this as its last step, which covers every
+# path to production — the Toast bot, a merged PR, a manual dispatch — instead
+# of only the sync. [skip ci] cannot suppress it, because it keys off the deploy
+# workflow rather than off the push.
+#
+# It used to key off `workflow_run` on that workflow, which silently stopped
+# firing on 2026-08-24: GitHub does not emit workflow_run for a run that
+# GITHUB_TOKEN started, and from that date every deploy was dispatched by the
+# Toast bot's token. This gate was dead for 19 days, through a deploy that
+# shipped the wrong commit. An explicit dispatch cannot be suppressed that way.
 #
 # The check itself is .github/scripts/site-health.mjs: it fetches the live site,
 # parses the live data.js, and loads the page in headless Chrome to confirm React
@@ -26,16 +32,20 @@ name: Post-deploy verify
 # "broken" look identical for the first minute or so. Failing fast here would
 # mean a false alarm on every deploy.
 
+# `deployed_sha` is what separates a real deploy from someone poking the button:
+# given one, this asserts the live site actually serves that commit and rolls
+# back if it does not. Without one it just checks that the site is up.
 on:
-  workflow_run:
-    workflows: ['Deploy to GitHub Pages']
-    types: [completed]
   workflow_dispatch:
     inputs:
       site_url:
         description: 'Base URL to verify'
         type: string
         default: 'https://theflytrapferndale.com'
+      deployed_sha:
+        description: 'Commit Pages just deployed. Enables the freshness check and rollback.'
+        type: string
+        default: ''
 
 permissions:
   # write: the rollback pushes a restore commit to main when a synced deploy
@@ -52,8 +62,8 @@ concurrency:
 jobs:
   verify:
     # A deploy that already failed needs no verifying — the deploy's own red X is
-    # the signal. Only verify what actually claims to have shipped.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # the signal. Pages dispatches this as its final step, so a failed deploy
+    # never gets this far and no conclusion check is needed.
     runs-on: ubuntu-latest
     steps:
       - name: Check out the commit that was deployed
@@ -62,11 +72,11 @@ jobs:
           # Full history: the rollback restores files from an older commit, and a
           # shallow clone would not have it.
           fetch-depth: 0
-          # For a workflow_run, head_sha is the commit Pages built from. Checking
-          # out that exact commit is what makes the freshness check meaningful:
-          # anything else and we would be comparing the live site against a
-          # different revision than the one that just deployed.
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          # deployed_sha is the commit Pages built from. Checking out that exact
+          # commit is what makes the freshness check meaningful: anything else
+          # and we would be comparing the live site against a different revision
+          # than the one that just deployed.
+          ref: ${{ inputs.deployed_sha || github.sha }}
 
       - uses: actions/setup-node@v7
         with:
@@ -94,10 +104,10 @@ jobs:
         continue-on-error: true
         env:
           SITE_URL: ${{ inputs.site_url || 'https://theflytrapferndale.com' }}
-          # Only assert freshness for a real deploy. On a manual dispatch the
+          # Only assert freshness for a real deploy. On a bare manual dispatch the
           # checkout is main's tip, which may legitimately be ahead of what is
           # live, and demanding a match would fail for no good reason.
-          EXPECT_DATA_JS_SHA: ${{ github.event_name == 'workflow_run' && steps.expected.outputs.sha || '' }}
+          EXPECT_DATA_JS_SHA: ${{ inputs.deployed_sha && steps.expected.outputs.sha || '' }}
           # Up to ~5 attempts over ~4 minutes. Pages propagation is the slow part;
           # a genuinely broken site fails all five just as fast as it fails one.
           ATTEMPTS: '5'
@@ -107,20 +117,20 @@ jobs:
       - name: Record this commit as verified-good
         if: steps.health.outcome == 'success'
         env:
-          DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          DEPLOYED_SHA: ${{ inputs.deployed_sha || github.sha }}
         run: |
           git push --force --quiet origin "$DEPLOYED_SHA:refs/verified/last-known-good"
           echo "Recorded $DEPLOYED_SHA as the last verified-good deploy." >> "$GITHUB_STEP_SUMMARY"
 
-      # Only on a real deploy. A manual dispatch verifies whatever is live, which
-      # may be older than the checkout, and rolling back off the back of that
-      # would be rolling back to a commit nobody deployed.
+      # Only on a real deploy. A bare manual dispatch verifies whatever is live,
+      # which may be older than the checkout, and rolling back off the back of
+      # that would be rolling back to a commit nobody deployed.
       - name: Roll back to the last verified-good commit
         id: rollback
-        if: steps.health.outcome != 'success' && github.event_name == 'workflow_run'
+        if: steps.health.outcome != 'success' && inputs.deployed_sha != ''
         env:
           LKG_SHA: ${{ steps.lkg.outputs.sha }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_SHA: ${{ inputs.deployed_sha }}
           GH_TOKEN: ${{ github.token }}
         run: node .github/scripts/rollback.mjs
 
@@ -145,7 +155,7 @@ jobs:
         # Expression values go through env, never straight into the shell — the
         # standard guard against workflow command injection.
         env:
-          DEPLOYED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          DEPLOYED_SHA: ${{ inputs.deployed_sha || github.sha }}
         run: |
           echo "::error::The site failed verification after deploying $DEPLOYED_SHA."
           echo "::error::The full check table is in the job summary."
