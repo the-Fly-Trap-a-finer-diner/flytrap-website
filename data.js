@@ -114,8 +114,7 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Emilio Delgado", desc: "Eggs how you like 'em sitting atop a bowl of chicken and white bean chile verde, a cheesy quesdilla, roasted corn salsa and sour cream.", veg: false, photo: "assets/specials/toast-the-emilio-delgado.jpg", price: "14.95" },
-    { id: "special-2", name: "The Lake Plains", desc: "A roasted root vegetable hash with feta, greens and balsamic onions. Eggs how you like 'em and Princess Mel's fried sage leaves; toast.🥬", veg: true, photo: "assets/specials/toast-the-lake-plains.jpg", price: "13.95" },
+    { id: "special-1", name: "The Lake Plains", desc: "A roasted root vegetable hash with feta, greens and balsamic onions. Eggs how you like 'em and Princess Mel's fried sage leaves; toast.🥬", veg: true, photo: "assets/specials/toast-the-lake-plains.jpg", price: "13.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
