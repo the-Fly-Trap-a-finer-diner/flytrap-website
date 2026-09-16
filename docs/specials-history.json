@@ -358,5 +358,15 @@
     "veg": true,
     "photo": "assets/specials/toast-the-lake-plains.jpg",
     "photoBlob": "2a81ade4e974570189198145e886717e5f73a54a"
+  },
+  {
+    "firstSeen": "2026-09-16",
+    "lastSeen": "2026-09-16",
+    "name": "the Cory",
+    "desc": "",
+    "price": "14.95",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
   }
 ]

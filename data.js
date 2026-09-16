@@ -114,11 +114,11 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Lake Plains", desc: "A roasted root vegetable hash with feta, greens and balsamic onions. Eggs how you like 'em and Princess Mel's fried sage leaves; toast.🥬", veg: true, photo: "assets/specials/toast-the-lake-plains.jpg", price: "13.95" },
+    { id: "special-1", name: "the Cory", desc: "", veg: true, photo: "", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Peach Crumble 🥬", price: "0.99" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Blueberry Lemon🥬", price: "0.99" },
   soupSpecial: { name: "Soup of the Day", flavor: "2.63 Alarm Pinto Bean🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
