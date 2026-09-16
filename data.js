@@ -114,11 +114,11 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "the Cory", desc: "", veg: true, photo: "", price: "14.95" },
+    { id: "special-1", name: "the Cory", desc: "A fall-back favorite! A rumble of eggs with Detroit breakfast sausage, blue cheese, caramelized onions and greens; comes with house spuds and toast.", veg: false, photo: "", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Blueberry Lemon🥬", price: "0.99" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Lemon Poppy🥬", price: "0.99" },
   soupSpecial: { name: "Soup of the Day", flavor: "2.63 Alarm Pinto Bean🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each

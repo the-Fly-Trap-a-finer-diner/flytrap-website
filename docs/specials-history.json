@@ -368,5 +368,15 @@
     "veg": true,
     "photo": "",
     "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-16",
+    "lastSeen": "2026-09-16",
+    "name": "the Cory",
+    "desc": "A fall-back favorite! A rumble of eggs with Detroit breakfast sausage, blue cheese, caramelized onions and greens; comes with house spuds and toast.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "",
+    "photoBlob": ""
   }
 ]
