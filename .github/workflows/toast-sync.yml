@@ -127,7 +127,14 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           set -euo pipefail
-          git add assets/menu.json data.js assets/specials docs/specials-history.json
+          git add -- assets/menu.json data.js docs/specials-history.json
+          # assets/specials/ is tracked via its .gitkeep, but stay defensive: a
+          # missing pathspec is fatal to `git add`, and under `set -e` that ends
+          # the run before the commit, the push and the Pages dispatch below.
+          # A menu-only sync must not be taken down by the specials directory.
+          if [ -d assets/specials ]; then
+            git add -- assets/specials
+          fi
           if git diff --cached --quiet; then
             echo "No Toast changes — skipping."
             echo "changed=false" >> "$GITHUB_OUTPUT"

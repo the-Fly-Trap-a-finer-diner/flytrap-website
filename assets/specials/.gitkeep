@@ -1,0 +1,11 @@
+# Keeps assets/specials/ tracked even when no special carries a Toast photo.
+#
+# Git does not track empty directories. On 2026-09-16 the last photo rotated
+# out, the directory vanished from the tree, and every menu-only Toast sync
+# after it died on `git add assets/specials` -> "pathspec did not match any
+# files" (exit 128), which took the commit, the push and the Pages deploy with
+# it. specials-sync.mjs only recreates the directory when the specials actually
+# change, so a menu-only sync never got there.
+#
+# Harmless to the sync: the orphan prune in specials-sync.mjs only matches
+# toast-*.jpg, so this file is never swept up.

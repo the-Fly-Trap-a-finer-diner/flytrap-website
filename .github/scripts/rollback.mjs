@@ -49,9 +49,9 @@ const DRY_RUN = process.env.DRY_RUN === '1'
 // itself unhealthy would be rolled back again, and again.
 export const ROLLBACK_SUBJECT = 'revert(toast): roll back to the last verified-good site'
 
-// The exact paths the Toast sync writes, kept in step with the `git add` line in
-// toast-sync.yml. Restoring a subset would leave data.js describing photos that
-// are not there.
+// The exact paths the Toast sync writes, kept in step with the `git add` lines
+// in toast-sync.yml. Restoring a subset would leave data.js describing photos
+// that are not there.
 export const SYNCED_PATHS = [
   'data.js',
   'assets/menu.json',
