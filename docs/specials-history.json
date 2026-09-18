@@ -378,5 +378,25 @@
     "veg": false,
     "photo": "",
     "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-18",
+    "lastSeen": "2026-09-18",
+    "name": "The Matarazzo",
+    "desc": "A breakfast carbonara? Bucatini pasta, crispy pork lardons, creamy cheese sauce, sunny egg, parmesan and a Calabrian chili oil.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-matarazzo.jpg",
+    "photoBlob": "9a5d6576b8ed8e6e5191495d6d5eeeb3fe0865d7"
+  },
+  {
+    "firstSeen": "2026-09-18",
+    "lastSeen": "2026-09-18",
+    "name": "The Hong Chau",
+    "desc": "A rumble of Burmese tofu with roasted mushrooms, baby yu choy, snap peas and sweet herbs tossed in a tamarind, lemon grass curry topped with fried lotus chips; browns and toast.🥬",
+    "price": "13.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-hong-chau.jpg",
+    "photoBlob": "cba22bc43aa0a2dda73e0060d636255fb0ff3a9f"
   }
 ]
