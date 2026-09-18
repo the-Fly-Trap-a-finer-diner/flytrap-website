@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-09-16T19:12:52.286+0000",
+  "lastUpdated": "2026-09-17T20:08:49.853+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -743,12 +743,6 @@
     },
     {
       "cat": "get-canned",
-      "nm": "PBR Pickle",
-      "desc": "",
-      "price": "3.00"
-    },
-    {
-      "cat": "get-canned",
       "nm": "Rogue Hazelnut Brown",
       "desc": "",
       "price": "6.00"
@@ -1355,9 +1349,9 @@
     },
     {
       "cat": "sweet-sips",
-      "nm": "Bailey's Almande",
+      "nm": "Grasshopper rocks",
       "desc": "",
-      "price": "9.00"
+      "price": "6.00"
     }
   ]
 }
