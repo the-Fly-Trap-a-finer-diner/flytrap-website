@@ -60,7 +60,7 @@ a bad automated menu update rolls itself back and pauses the sync.
 
 When that happens the repo will contain **`.github/SYNC_PAUSED`**, and the Toast
 sync skips every run until it is deleted. Fix the cause first — usually the Toast
-item — then delete the file and re-run the sync with `force=true`.
+item - then delete the file and re-run the sync.
 
 Full runbook, including how to roll back by hand:
 [docs/SPECIALS_SYNC.md](docs/SPECIALS_SYNC.md#when-a-sync-breaks-the-site)

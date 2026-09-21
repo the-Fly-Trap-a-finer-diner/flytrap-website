@@ -97,13 +97,14 @@ block keeps its own last-good committed state as the fallback.
   specials, and menu items keep it inline, so it renders as the green leaf). The
   `(v)` text marker on specials is also stripped and flags the item vegetarian.
 
-## Forcing a run
+## Running it on demand
 
-The specials step reuses the menu step's payload, and the menu step skips its
-pull when Toast reports the menu unchanged — so a change to the sync's own logic
-won't reach the site until Toast next republishes. Force one run with
-**Actions → Toast sync → Run workflow → force = true**. See
-[TOAST_MENU_SYNC.md](TOAST_MENU_SYNC.md#forcing-a-run-after-changing-the-sync-logic).
+The specials step reuses the payload the menu step already pulled, and the menu
+step pulls on every run, so a change in Toast reaches the site on the next cycle
+with nothing to force. To run it now rather than wait: **Actions → Toast sync →
+Run workflow**. Add **dry_run = true** to see what Toast would publish without
+committing anything. See
+[TOAST_MENU_SYNC.md](TOAST_MENU_SYNC.md#change-detection-is-on-content-never-on-toasts-timestamp).
 
 ## Test it offline (no network)
 
@@ -185,8 +186,7 @@ To resume:
 1. Read the incident issue and the pause file — both say what failed.
 2. Fix the cause. Usually the Toast item; occasionally the sync script.
 3. Delete `.github/SYNC_PAUSED` and commit.
-4. Run **Toast sync** with `force=true` to pull a fresh copy — the normal
-   `lastUpdated` gate would otherwise skip until Toast changes again.
+4. Run **Toast sync** to pull a fresh copy without waiting for the next cron tick.
 
 ### Rolling back by hand
 

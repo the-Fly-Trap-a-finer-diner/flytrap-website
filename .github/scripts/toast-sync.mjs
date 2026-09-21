@@ -15,6 +15,8 @@
 // Flow every run:
 //   1. auth   -> POST /authentication/v1/authentication/login  (client credentials)
 //   2. menu   -> GET  /menus/v2/metadata (for lastUpdated) + GET /menus/v2/menus.
+//                Both run every time: Toast's lastUpdated tracks menu publishes,
+//                not edits, so it cannot be used to decide whether to pull.
 //   3. build  -> { categories, items } from the menu groups and write
 //                assets/menu.json only when the content actually changed, so an
 //                unchanged menu commits nothing (byte-identical output).
@@ -34,21 +36,9 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, resolve } from 'node:path'
 
-// True when data.js holds at least one special published with photo: "" — i.e.
-// a card currently showing the brand placeholder because Toast had no image for
-// it. Pure so it can be unit-tested; only the SPECIALS block is inspected, so an
-// empty photo anywhere else in data.js is ignored.
-export function specialsAwaitingPhoto(dataJsSource) {
-  const block = String(dataJsSource || '').match(/SPECIALS:START\s*\*\/([\s\S]*?)\/\*\s*SPECIALS:END/)
-  return !!block && /\bphoto:\s*""/.test(block[1])
-}
-
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
 const MENU_JSON = resolve(REPO_ROOT, 'assets', 'menu.json')
-const DATA_JS = resolve(REPO_ROOT, 'data.js')
-
-const readFileOr = (p, fallback = '') => readFile(p, 'utf8').catch(() => fallback)
 
 // --- Toast connection (from GitHub Actions secrets) ---
 const HOST = process.env.TOAST_HOSTNAME || 'https://ws-api.toasttab.com'
@@ -226,41 +216,39 @@ async function main() {
   }
 
   const dryRun = !!process.env.TOAST_DRY_RUN
-  const FORCE = !!process.env.TOAST_FORCE
 
   const token = await login()
   console.log('Auth OK.')
 
-  // Only pull /menus when Toast's published timestamp changed. Toast caps
-  // GET /menus at 1 request/sec per location, so skipping the pull on an
-  // unchanged menu is both the rate-limit-friendly and the cheap thing to do —
-  // most runs stop here after two light calls (auth + metadata).
+  // /menus is pulled on EVERY run. Its content is the only thing we trust to say
+  // whether anything changed.
+  //
+  // This used to be gated on /menus/v2/metadata's lastUpdated: skip the pull when
+  // the timestamp matches the one recorded in assets/menu.json. That gate assumed
+  // "Toast's timestamp has not moved, so nothing we derive from Toast has moved".
+  // It is not true. lastUpdated tracks menu PUBLISHES, and plenty of edits the
+  // restaurant makes in Toast Web do not republish the menu - attaching a photo
+  // to an item (the reason the awaitingPhoto escape hatch existed), and, as of
+  // 2026-09-18, removing a special from the Weekly Specials group and changing the
+  // Soup O' The Day description. Both landed in Toast and the gate never saw them:
+  // lastUpdated sat at 2026-09-18T21:12:48Z for three days while the site kept
+  // showing a pulled special (The Matarazzo) and a stale soup ("No soup on the
+  // weekend!" against a live Corn Chowder). Every run was green; nothing was wrong
+  // except the answer.
+  //
+  // Content comparison catches all of it and needs no per-field escape hatches:
+  // writeMenuJson writes only on a byte difference, and specials-sync returns early
+  // when the spliced data.js is identical, so an unchanged menu still commits
+  // nothing. The cost is one extra /menus call per run - 96/day on the 15-minute
+  // cron, against Toast's cap of 1 request/sec per location. The 429s that
+  // originally motivated the gate came from calling /menus TWICE in one run (menu
+  // step + specials step); that is already fixed by sharing the payload between the
+  // two steps, and is unaffected by this.
+  //
+  // lastUpdated is still read and still written into menu.json - it is useful when
+  // reading a log or a diff - it just no longer decides whether we pull.
   const meta = await apiGet(token, '/menus/v2/metadata')
   const lastUpdated = meta?.lastUpdated || meta?.lastPublished || null
-
-  // TOAST_FORCE pulls anyway. The gate assumes "Toast's menu hasn't changed, so
-  // neither has anything we derive from it" — which stops being true whenever the
-  // sync's OWN logic changes. After such a change the fix can't reach the site
-  // until Toast happens to republish, which may be weeks. One forced run costs a
-  // single extra /menus call.
-  //
-  // The same assumption breaks while a special is published without a photo.
-  // Attaching an image to an item in Toast does not reliably move the menu's
-  // lastUpdated, so the timestamp gate would never notice the photo appearing and
-  // the placeholder tile would stay up indefinitely. While data.js holds a special
-  // with photo: "", keep pulling so the photo lands on the next run after Kara
-  // adds it. Costs one /menus call per run, and only until every special has one.
-  const awaitingPhoto = specialsAwaitingPhoto(await readFileOr(DATA_JS))
-  if (lastUpdated && !process.env.TOAST_DUMP && !dryRun && !FORCE && !awaitingPhoto) {
-    let prevUpdated = null
-    try { prevUpdated = JSON.parse(await readFile(MENU_JSON, 'utf8')).lastUpdated } catch { /* no prior menu.json */ }
-    if (prevUpdated && prevUpdated === lastUpdated) {
-      console.log(`Menu unchanged (lastUpdated=${lastUpdated}) — skipping the /menus pull.`)
-      return
-    }
-  }
-  if (FORCE) console.log('TOAST_FORCE set — pulling /menus even though the menu may be unchanged.')
-  else if (awaitingPhoto) console.log('A special is still waiting on its Toast photo — pulling /menus to check for it.')
 
   // Full listing to a file, every group (incl. excluded), for review.
   if (process.env.TOAST_DUMP) {
