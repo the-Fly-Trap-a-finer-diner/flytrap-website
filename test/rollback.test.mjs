@@ -92,9 +92,16 @@ test('the synced paths match what the Toast sync commits', async () => {
   // If these drift, a rollback restores data.js while leaving the photos it
   // references from the bad sync — a half-rolled-back site.
   const wf = await readFile(join(REPO, '.github/workflows/toast-sync.yml'), 'utf8');
-  const addLine = wf.split('\n').find((l) => l.trim().startsWith('git add '));
-  assert.ok(addLine, 'could not find the git add line in toast-sync.yml');
-  const committed = addLine.trim().replace('git add ', '').split(/\s+/).sort();
+  // The step stages in more than one `git add`: assets/specials/ is added
+  // separately so a missing directory can't take a menu-only sync down with
+  // "pathspec did not match any files". Collect every add, so a path that
+  // moves between them — or a third line — still has to match SYNCED_PATHS.
+  const addLines = wf.split('\n').map((l) => l.trim()).filter((l) => l.startsWith('git add '));
+  assert.ok(addLines.length, 'could not find a git add line in toast-sync.yml');
+  const committed = addLines
+    .flatMap((l) => l.replace('git add ', '').split(/\s+/))
+    .filter((a) => a !== '--') // the end-of-options separator, not a path
+    .sort();
   assert.deepEqual([...SYNCED_PATHS].sort(), committed);
 });
 
@@ -180,7 +187,7 @@ test('end to end: a bad bot sync is restored, paused and pushed', async () => {
   // The circuit breaker is set and explains itself.
   assert.ok(await exists(join(ctx.work, '.github', 'SYNC_PAUSED')));
   const pause = await readFile(join(ctx.work, '.github', 'SYNC_PAUSED'), 'utf8');
-  assert.match(pause, /force=true/);
+  assert.match(pause, /Run the Toast sync to pull a fresh, correct copy\./);
 
   // And it actually reached the remote — a rollback that only exists locally is
   // no rollback at all.

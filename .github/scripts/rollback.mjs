@@ -49,9 +49,9 @@ const DRY_RUN = process.env.DRY_RUN === '1'
 // itself unhealthy would be rolled back again, and again.
 export const ROLLBACK_SUBJECT = 'revert(toast): roll back to the last verified-good site'
 
-// The exact paths the Toast sync writes, kept in step with the `git add` line in
-// toast-sync.yml. Restoring a subset would leave data.js describing photos that
-// are not there.
+// The exact paths the Toast sync writes, kept in step with the `git add` lines
+// in toast-sync.yml. Restoring a subset would leave data.js describing photos
+// that are not there.
 export const SYNCED_PATHS = [
   'data.js',
   'assets/menu.json',
@@ -183,7 +183,7 @@ async function main() {
       '  1. Work out what was wrong with the Toast data or the sync itself.',
       '  2. Fix it at the source — the Toast item, or the sync script.',
       '  3. Delete this file and commit.',
-      '  4. Run the Toast sync with force=true to pull a fresh, correct copy.',
+      '  4. Run the Toast sync to pull a fresh, correct copy.',
       '',
       'While this file exists the site keeps serving the last verified-good content.',
       '',
@@ -244,7 +244,7 @@ async function main() {
     deployNote,
     '',
     '**The Toast sync is paused.** Fix the cause, delete `.github/SYNC_PAUSED`, then run',
-    'the sync with `force=true`.',
+    'the sync.',
   ])
 }
 

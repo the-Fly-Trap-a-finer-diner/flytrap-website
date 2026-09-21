@@ -251,7 +251,7 @@
   },
   {
     "firstSeen": "2026-08-21",
-    "lastSeen": "2026-08-24",
+    "lastSeen": "2026-08-27",
     "name": "The Stanley Kowalski",
     "desc": "It's a fried bologna sandwich! House made, smoked thick-cut and green chili infused on a bun with cowboy candy, pickled onion, BBQ aioli, 'merican cheese,\r\na sunny egg, lettuce and tomato; pick your side!",
     "price": "15.95",
@@ -268,5 +268,135 @@
     "veg": true,
     "photo": "assets/specials/toast-the-eastern-seaboard.jpg",
     "photoBlob": "23554c250f3024d0aa079d5da1b3b0fccc947d75"
+  },
+  {
+    "firstSeen": "2026-08-28",
+    "lastSeen": "2026-08-31",
+    "name": "The Summer Bishil",
+    "desc": "Chana dal, gunpowder spice roasted sweet potatoes, spinach, mushrooms and paneer cheese rolled up in a whole wheat wrap with a dollop of cashew mint chutney🥬.",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-summer-bishil.jpg",
+    "photoBlob": "66afeea388f12c98fd925d52dea056622959ea2f"
+  },
+  {
+    "firstSeen": "2026-08-28",
+    "lastSeen": "2026-08-28",
+    "name": "The Carl Weathers",
+    "desc": "Creole shrimp and roasted corn cakes served up with eggs how you like 'em, green tomato cocktail sauce and field greens tossed in a tomato vinaigrette; yup, toast!",
+    "price": "16.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-carl-weathers.jpg",
+    "photoBlob": "61b047a63a7627929e470e471602ec7c4ed6beb2"
+  },
+  {
+    "firstSeen": "2026-09-04",
+    "lastSeen": "2026-09-08",
+    "name": "The Diaspora",
+    "desc": "House made Hmong style lemongrass pork sausage, eggs how you like 'em and red chili baby bok choy all on a bed of ginger congee. How about toast?",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-diaspora.jpg",
+    "photoBlob": "2cd0077934352f2c1d622c250d736663a93fa990"
+  },
+  {
+    "firstSeen": "2026-09-04",
+    "lastSeen": "2026-09-08",
+    "name": "Che Figata!",
+    "desc": "A rumble of eggs with proccoli rabe, oven dried tomato and red onion. Topped with shipped asiago, ricotta and italian chili crisp; browns and toast.🥬",
+    "price": "13.95",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-04",
+    "lastSeen": "2026-09-08",
+    "name": "Special Sausage",
+    "desc": "",
+    "price": "6",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-10",
+    "lastSeen": "2026-09-10",
+    "name": "Spinach Artichoke Dip Rumble?!",
+    "desc": "Roasted Artichokes, Spinach, Ricotta, Feta and Red Onion Rumbled with Eggs; comes with spuds and toast.🥬",
+    "price": "13.95",
+    "veg": true,
+    "photo": "assets/specials/toast-spinach-artichoke-dip-rumble.jpg",
+    "photoBlob": "d7c82eeeed15c4b5e27f3c8d470cfc31c0629e41"
+  },
+  {
+    "firstSeen": "2026-09-11",
+    "lastSeen": "2026-09-12",
+    "name": "The Emilio Delgado",
+    "desc": "Eggs how you like 'em sitting atop a bowl of chicken and white bean chile verde, a cheesy quesdilla, roasted corn salsa and sour cream.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-emilio-delgado.jpg",
+    "photoBlob": "71f917c2a57d00fedfdd7ef22f198ee65cb959ae"
+  },
+  {
+    "firstSeen": "2026-09-11",
+    "lastSeen": "2026-09-12",
+    "name": "The Lake Plains",
+    "desc": "",
+    "price": "13.95",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-12",
+    "lastSeen": "2026-09-14",
+    "name": "The Lake Plains",
+    "desc": "A roasted root vegetable hash with feta, greens and balsamic onions. Eggs how you like 'em and Princess Mel's fried sage leaves; toast.🥬",
+    "price": "13.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-lake-plains.jpg",
+    "photoBlob": "2a81ade4e974570189198145e886717e5f73a54a"
+  },
+  {
+    "firstSeen": "2026-09-16",
+    "lastSeen": "2026-09-16",
+    "name": "the Cory",
+    "desc": "",
+    "price": "14.95",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-16",
+    "lastSeen": "2026-09-16",
+    "name": "the Cory",
+    "desc": "A fall-back favorite! A rumble of eggs with Detroit breakfast sausage, blue cheese, caramelized onions and greens; comes with house spuds and toast.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "",
+    "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-09-18",
+    "lastSeen": "2026-09-18",
+    "name": "The Matarazzo",
+    "desc": "A breakfast carbonara? Bucatini pasta, crispy pork lardons, creamy cheese sauce, sunny egg, parmesan and a Calabrian chili oil.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-matarazzo.jpg",
+    "photoBlob": "9a5d6576b8ed8e6e5191495d6d5eeeb3fe0865d7"
+  },
+  {
+    "firstSeen": "2026-09-18",
+    "lastSeen": "2026-09-21",
+    "name": "The Hong Chau",
+    "desc": "A rumble of Burmese tofu with roasted mushrooms, baby yu choy, snap peas and sweet herbs tossed in a tamarind, lemon grass curry topped with fried lotus chips; browns and toast.🥬",
+    "price": "13.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-hong-chau.jpg",
+    "photoBlob": "cba22bc43aa0a2dda73e0060d636255fb0ff3a9f"
   }
 ]

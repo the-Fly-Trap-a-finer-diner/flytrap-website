@@ -7,7 +7,7 @@ Everything below describes `main` as of 2026-08-24.
 ## 1. The 30-second version
 
 ```
-Toast POS ──[GitHub Action, every 15 min]──▶ assets/menu.json  +  data.js (SPECIALS/EXTRAS blocks)
+Toast POS ────[GitHub Action, on a cron]────▶ assets/menu.json  +  data.js (SPECIALS/EXTRAS blocks)
                                                      │  (committed to main)
                                                      ▼
                                         [GitHub Action] Pages deploy
@@ -17,14 +17,14 @@ Toast POS ──[GitHub Action, every 15 min]──▶ assets/menu.json  +  data
                                      one HTML page, five sections + one hash route
 ```
 
-Every deploy is then verified, and the live site is checked every 15 minutes:
+Every deploy is then verified, and the live site is checked on a cron:
 
 ```
         Pages deploy ──▶ [post-deploy-verify] ──┬── pass ──▶ record last-known-good
                                                 └── fail ──▶ roll back + pause the sync
                                                               + open an incident issue
 
-  cron, every 15 min ──▶ [site-health] ─────────┬── pass ──▶ close any open incident
+  cron (see below) ──▶ [site-health] ─────────┬── pass ──▶ close any open incident
                                                 └── fail ──▶ open/update the incident
 ```
 
@@ -161,9 +161,9 @@ either way.
 
 ### `toast-sync.yml` — content pipeline
 
-Cron `2,17,32,47 * * * *` (≈ every 15 min, deliberately offset off the top of the
-hour because GitHub drops congested sub-hourly runs), plus manual dispatch with a
-`dry_run` toggle.
+Cron `2,17,32,47 * * * *`, plus manual dispatch with a `dry_run` toggle. The cron
+is what we *ask* for; see [The schedule is not 15 minutes](#the-schedule-is-not-15-minutes)
+for what GitHub actually does with it.
 
 Two jobs. `guard` first: if `.github/SYNC_PAUSED` exists the `sync` job is
 **skipped** (not failed — a red X four times an hour for the length of a pause
@@ -201,6 +201,46 @@ Optional: `TOAST_HOSTNAME`, `TOAST_VEG_MARKER`, `TOAST_SPECIALS_GROUP`,
 `TOAST_EXCLUDE_GROUPS`.
 
 Full detail: [TOAST_MENU_SYNC.md](TOAST_MENU_SYNC.md) and [SPECIALS_SYNC.md](SPECIALS_SYNC.md).
+
+### The schedule is not 15 minutes
+
+Both scheduled workflows ask GitHub for a run every 15 minutes. Neither gets one.
+Measured over 27 days (2026-08-25 to 2026-09-21), from the Actions run history:
+
+| workflow | cron asks for | actually fired | median gap | worst gap |
+|---|---|---|---|---|
+| `toast-sync.yml` | 4.0 /hour | **0.30 /hour** | 188 min | 686 min |
+| `site-health.yml` | 4.0 /hour | **0.31 /hour** | 173 min | 678 min |
+
+7.5% of requested ticks run. Two further findings say this is not something the
+cron expression can fix:
+
+- **The firing minutes are uniform across the hour.** Nothing clusters at
+  `:02/:17/:32/:47` or `:07/:22/:37/:52`. GitHub is not running our schedule late,
+  it is running its own. The old comment here claimed offsetting off the top of the
+  hour loses fewer runs than `*/15`; there is no evidence for that and it was
+  removed.
+- **The two workflows fire together.** Each `toast-sync` run lands a median of
+  **7 minutes** from a `site-health` run, despite different cron expressions. The
+  scheduler wakes for this repo roughly every 3 hours and fires whatever is due.
+  That makes this per-repo load-gating, not per-workflow throttling - so adding
+  cron lines, changing minutes, or splitting into more workflows all do nothing.
+  `site-health.yml` already ran that experiment and got identical treatment.
+
+Reproduce with `gh run list --workflow=<name> --limit 200 --json createdAt,event`
+and filter to `event == "schedule"`.
+
+**What this means in practice.** A Toast change is live within a few hours, not
+15 minutes. If it needs to be live now, press **Actions → Toast sync → Run workflow**
+(~1 minute). This is a freshness limit only - since #153 the sync detects changes by
+content, so every run that does fire catches everything that changed since the last
+one. Nothing is ever missed, it is only ever late.
+
+**Escaping it** would mean triggering from outside GitHub's scheduler: an external
+cron (a Cloudflare Worker calling `workflow_dispatch`) or a self-dispatching chain
+that holds a runner continuously. Both were considered and declined in September
+2026 - the added moving parts were not worth it for a menu that turns over weekly.
+Revisit if same-day freshness ever becomes a real requirement.
 
 ### `pages.yml` — deploy
 
@@ -297,10 +337,20 @@ the bot are the pre-write parse check in `specials-sync.mjs` and
 
 ### `post-deploy-verify.yml` — did the deploy actually work
 
-Runs on `workflow_run` after **Deploy to GitHub Pages** completes. Keyed off the
-deploy rather than the push, because the sync bot's `[skip ci]` suppresses every
-push-triggered workflow — and this way it covers every route to production: the
-bot, a merged PR, a manual dispatch.
+Dispatched by **Deploy to GitHub Pages** as its last step, which passes the SHA
+it built as `deployed_sha`. Keyed off the deploy rather than the push, because
+the sync bot's `[skip ci]` suppresses every push-triggered workflow - and this
+way it covers every route to production: the bot, a merged PR, a manual dispatch.
+
+It originally keyed off `workflow_run` on the deploy, which went silent on
+2026-08-24: GitHub emits no `workflow_run` event for a run that `GITHUB_TOKEN`
+started, and every deploy from that date was dispatched by the bot's token. The
+gate was dead for 19 days, including the 2026-09-11 deploy that shipped the wrong
+commit. An explicit dispatch cannot be suppressed that way.
+
+A dispatch without `deployed_sha` - a human poking the button - skips the
+`freshness` check and the rollback, since main's tip may legitimately be ahead of
+what is live.
 
 It runs `site-health.mjs`, which makes six checks and reports all of them even
 after one fails:
@@ -354,8 +404,8 @@ Two details that are easy to get wrong, and are the way they are on purpose:
   another blank site.
 
 A rollback writes **`.github/SYNC_PAUSED`**, which stops the Toast sync. Without it
-the next run re-pulls the same bad Toast data and the two trade commits every
-fifteen minutes. Clearing it is a deliberate human act — see
+the next run re-pulls the same bad Toast data and the two trade commits on every
+run for as long as it takes someone to notice. Clearing it is a deliberate human act — see
 [SPECIALS_SYNC.md](SPECIALS_SYNC.md#the-sync-is-paused--what-now).
 
 ### `site-health.yml` — is the site up right now
@@ -390,8 +440,7 @@ non-developer submit specials through a passcode-protected form, committing stra
 to `main` via the GitHub API with a personal access token.
 
 **That app was removed.** Once Toast became the source of truth, the next sync
-overwrote anything the form published within 15 minutes, so it was not the fallback
-it appeared to be — and it carried a personal token and a hardcoded repo path that
+overwrote anything the form published, so it was not the fallback it appeared to be — and it carried a personal token and a hardcoded repo path that
 would break on any change of ownership.
 
 What remains is the library it shared with the sync: `lib/specials.js` (builds and

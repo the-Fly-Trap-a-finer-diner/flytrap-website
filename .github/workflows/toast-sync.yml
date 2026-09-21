@@ -11,8 +11,11 @@ name: Toast sync
 # specials-sync + toast-menu-sync workflows. A `git pull --rebase` before push
 # also absorbs any human commit that landed on main mid-run.
 #
-# Every 15 minutes it checks Toast; if nothing changed it commits nothing and
-# skips. No-op until the TOAST_* secrets are set, so it is safe to merge before
+# On every run it pulls the full Toast menu and compares it to what is
+# committed; if the content is identical it commits nothing and skips. The
+# comparison is on content, never on Toast's lastUpdated timestamp - that tracks
+# menu publishes, not edits, and it missed a pulled special and a changed soup for
+# three days in September 2026. No-op until the TOAST_* secrets are set, so it is safe to merge before
 # credentials are installed. Each script writes nothing on any Toast/network
 # error, so the last-good committed menu/specials stay live — a Toast outage
 # never blanks the site. The Toast credential needs the `menus:read` scope.
@@ -22,20 +25,27 @@ name: Toast sync
 
 on:
   schedule:
-    # Target ~every 15 minutes, offset off the top of the hour. GitHub's
-    # scheduler is best-effort and drops sub-hourly runs under load; the :00
-    # slot is the most congested, so 2/17/32/47 tends to lose fewer runs than
-    # */15. Still not guaranteed on time. Most runs are a no-op (nothing
-    # committed unless Toast actually changed).
+    # We ask for every 15 minutes. GitHub gives us roughly one run every three
+    # hours: measured over 27 days this workflow fired 0.30 times/hour against
+    # the 4.0 it asks for, at minutes scattered uniformly across the hour rather
+    # than at 2/17/32/47.
+    #
+    # Do not try to fix that here. site-health.yml asks for the same frequency at
+    # different minutes and gets an identical 0.31/hour, firing a median of 7
+    # minutes away from this one - the scheduler wakes per REPO, not per workflow,
+    # so more cron lines and different offsets change nothing. Escaping it needs a
+    # trigger outside GitHub's scheduler; declined in Sept 2026 as not worth the
+    # moving parts. See docs/ARCHITECTURE.md#the-schedule-is-not-15-minutes.
+    #
+    # This costs freshness only, never correctness: change detection is on content,
+    # so whichever run does fire catches everything since the last one. Press
+    # Actions -> Toast sync -> Run workflow when something needs to be live now.
+    # Most runs are a no-op (nothing committed unless Toast actually changed).
     - cron: '2,17,32,47 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
         description: 'Verify only — pull from Toast and log, write/commit nothing'
-        type: boolean
-        default: false
-      force:
-        description: 'Force — pull /menus even if Toast says the menu is unchanged. Use after changing the sync logic itself.'
         type: boolean
         default: false
 
@@ -51,7 +61,7 @@ jobs:
   # Circuit breaker. An automatic rollback creates .github/SYNC_PAUSED when a
   # synced deploy fails verification. Without this gate the next scheduled run
   # re-pulls the same bad Toast data, the rollback fires again, and the two trade
-  # commits every fifteen minutes until a human notices.
+  # commits on every run until a human notices.
   #
   # Its own job rather than a first step so a paused run shows as SKIPPED. A step
   # that exited non-zero would post a red X and a failure email four times an
@@ -97,9 +107,6 @@ jobs:
       TOAST_HOSTNAME: ${{ secrets.TOAST_HOSTNAME }}
       TOAST_VEG_MARKER: ${{ secrets.TOAST_VEG_MARKER }}
       TOAST_DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
-      # Bypasses the lastUpdated gate in toast-sync.mjs. Manual dispatch only —
-      # the scheduled runs never set it, so the rate-limit behaviour is unchanged.
-      TOAST_FORCE: ${{ inputs.force && '1' || '' }}
     steps:
       - uses: actions/checkout@v7
 
@@ -127,7 +134,14 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           set -euo pipefail
-          git add assets/menu.json data.js assets/specials docs/specials-history.json
+          git add -- assets/menu.json data.js docs/specials-history.json
+          # assets/specials/ is tracked via its .gitkeep, but stay defensive: a
+          # missing pathspec is fatal to `git add`, and under `set -e` that ends
+          # the run before the commit, the push and the Pages dispatch below.
+          # A menu-only sync must not be taken down by the specials directory.
+          if [ -d assets/specials ]; then
+            git add -- assets/specials
+          fi
           if git diff --cached --quiet; then
             echo "No Toast changes — skipping."
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -143,8 +157,31 @@ jobs:
 
       # GITHUB_TOKEN commits don't trigger other workflows, so kick Pages
       # explicitly when something actually changed.
+      #
+      # `--ref main` makes GitHub resolve the branch to a SHA at dispatch time,
+      # and that resolution lags the push by a second or two. On 2026-09-11 the
+      # dispatch landed 3s after the push, resolved to the PARENT commit, and
+      # deployed the previous sync's specials - a green run shipping stale
+      # content, with no self-healing: the next run only commits if Toast moves
+      # again, so the site stayed a sync behind. Wait for the API to actually see
+      # the pushed SHA before dispatching. workflow_dispatch only accepts a
+      # branch or tag as `ref`, so the SHA cannot simply be pinned.
       - name: Trigger Pages deploy
         if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run "Deploy to GitHub Pages" --ref main
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          SHA=$(git rev-parse HEAD)
+          for i in $(seq 1 30); do
+            SEEN=$(gh api "repos/$REPO/commits/main" --jq .sha 2>/dev/null || true)
+            [ "$SEEN" = "$SHA" ] && break
+            if [ "$i" -eq 30 ]; then
+              echo "::error::main still reads $SEEN after 60s, expected $SHA. Not dispatching a deploy that would ship stale content."
+              exit 1
+            fi
+            sleep 2
+          done
+          gh workflow run "Deploy to GitHub Pages" --ref main
+          echo "Dispatched Pages deploy for $SHA." >> "$GITHUB_STEP_SUMMARY"

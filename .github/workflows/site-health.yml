@@ -25,10 +25,16 @@ name: Site health
 
 on:
   schedule:
-    # Roughly every 15 minutes, on :07/:22/:37/:52. Deliberately offset from the
-    # Toast sync's :02/:17/:32/:47 so a health check never lands mid-deploy and
-    # reports a half-propagated site. GitHub's scheduler is best-effort and drops
-    # sub-hourly runs under load; the :00 slot is the worst, hence neither.
+    # Asks for every 15 minutes, on :07/:22/:37/:52, offset from the Toast sync's
+    # :02/:17/:32/:47 on the theory that a health check would then never land
+    # mid-deploy.
+    #
+    # Measured over 27 days, the offset does nothing: this workflow fires 0.31
+    # times/hour (not 4.0), at minutes spread across the whole hour, a median of 7
+    # minutes from a toast-sync run. GitHub's scheduler wakes per repo and fires
+    # whatever is due, so the two land together regardless of the expression. The
+    # offset is kept because it costs nothing, not because it works. See
+    # docs/ARCHITECTURE.md#the-schedule-is-not-15-minutes.
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:

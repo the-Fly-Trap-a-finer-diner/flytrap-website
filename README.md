@@ -12,8 +12,8 @@ Menu and specials content is pulled from **Toast** by a scheduled GitHub Action.
 | **Deployed** | GitHub Pages from `main` → **https://theflytrapferndale.com** |
 | **Production domain** | Live. `www.`, `theflytrapferndale.net` and the `github.io` host all 301 to the apex. |
 | **Content source** | Toast POS (menu, weekly specials, soup, muffin) + hand-edited files for everything else |
-| **CI** | `guardrails` + `tests` on every PR, `toast-sync` every 15 min, `pages` on every push to `main` |
-| **Monitoring** | Every deploy is verified in a real browser, and the live site is checked every 15 min. A failure opens a `site-down` issue and assigns it. |
+| **CI** | `guardrails` + `tests` on every PR, `toast-sync` on a cron, `pages` on every push to `main` |
+| **Monitoring** | Every deploy is verified in a real browser, and the live site is checked on a cron. A failure opens a `site-down` issue and assigns it. Both crons ask for 15 minutes and get roughly 3 hours - [why](docs/ARCHITECTURE.md#the-schedule-is-not-15-minutes). |
 
 ## Run it locally
 
@@ -60,7 +60,7 @@ a bad automated menu update rolls itself back and pauses the sync.
 
 When that happens the repo will contain **`.github/SYNC_PAUSED`**, and the Toast
 sync skips every run until it is deleted. Fix the cause first — usually the Toast
-item — then delete the file and re-run the sync with `force=true`.
+item - then delete the file and re-run the sync.
 
 Full runbook, including how to roll back by hand:
 [docs/SPECIALS_SYNC.md](docs/SPECIALS_SYNC.md#when-a-sync-breaks-the-site)

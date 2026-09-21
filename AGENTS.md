@@ -35,7 +35,7 @@ fonts/                  # self-hosted Fraunces + Inter (woff2)
 ```
 
 Never hand-edit `assets/menu.json` or the `SPECIALS:` / `EXTRAS:` blocks of
-`data.js` — the Toast sync rewrites both every 15 minutes.
+`data.js` — the Toast sync rewrites both on every run.
 
 Add new sections as new `.jsx` files at root + new `<script type="text/babel">` tag in `index.html`. Do not introduce subfolders for components.
 

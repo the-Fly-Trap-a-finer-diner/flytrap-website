@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-08-24T13:37:30.101+0000",
+  "lastUpdated": "2026-09-21T17:01:19.533+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -707,9 +707,9 @@
     },
     {
       "cat": "free-flowing",
-      "nm": "Soft Parade",
+      "nm": "Ghettoblaster",
       "desc": "",
-      "price": "7.00"
+      "price": "6.00"
     },
     {
       "cat": "get-canned",
@@ -740,12 +740,6 @@
       "nm": "Blakes Original",
       "desc": "",
       "price": "5.00"
-    },
-    {
-      "cat": "get-canned",
-      "nm": "PBR Pickle",
-      "desc": "",
-      "price": "3.00"
     },
     {
       "cat": "get-canned",
@@ -1355,9 +1349,9 @@
     },
     {
       "cat": "sweet-sips",
-      "nm": "Bailey's Almande",
+      "nm": "Grasshopper rocks",
       "desc": "",
-      "price": "9.00"
+      "price": "6.00"
     }
   ]
 }

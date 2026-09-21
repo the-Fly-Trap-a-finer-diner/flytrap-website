@@ -114,13 +114,12 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Stanley Kowalski", desc: "It's a fried bologna sandwich! House made, smoked thick-cut and green chili infused on a bun with cowboy candy, pickled onion, BBQ aioli, 'merican cheese, a sunny egg, lettuce and tomato; pick your side!", veg: true, photo: "assets/specials/toast-the-stanley-kowalski.jpg", price: "15.95" },
-    { id: "special-2", name: "The Eastern Seaboard", desc: "Two eggs how you like 'em sitting on a crispy scallion flatbread topped with a clinatro, cucumber and yuzu salad, toasted sesame and a sweet gochujang drizzle. 🥬", veg: true, photo: "assets/specials/toast-the-eastern-seaboard.jpg", price: "14.95" },
+    { id: "special-1", name: "The Hong Chau", desc: "A rumble of Burmese tofu with roasted mushrooms, baby yu choy, snap peas and sweet herbs tossed in a tamarind, lemon grass curry topped with fried lotus chips; browns and toast.🥬", veg: true, photo: "assets/specials/toast-the-hong-chau.jpg", price: "13.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Lemon Pistachio Crumble🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Smoky Aubergine 🥬", available: true, cup: "5.00", bowl: "6.00" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Banana Chocolate Chip🥬", price: "0.99" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Corn Chowder🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the

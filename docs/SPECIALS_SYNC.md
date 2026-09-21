@@ -43,8 +43,8 @@ description set to a message like "No soup on the weekend!" — the sync writes
 through on its own with no price hanging off it. In stock, it shows the flavor +
 Cup/Bowl.
 
-`.github/workflows/toast-sync.yml` runs this **and** the menu pull every 15
-minutes (+ manual dispatch) in a single job: it makes one commit of `data.js` +
+`.github/workflows/toast-sync.yml` runs this **and** the menu pull on the same
+schedule (+ manual dispatch) in a single job: it makes one commit of `data.js` +
 `assets/menu.json` + the images when anything changed (skips otherwise), rebases
 onto `main` before pushing, and triggers the Pages deploy.
 
@@ -75,11 +75,11 @@ block keeps its own last-good committed state as the fallback.
   tile (black field, red bloom, cut-out fly) in the same 1:1 box a photo would
   occupy, so the card keeps its shape in the grid. To pull a special, move it out
   of the group. Removing only its photo no longer removes the special.
-- **Adding the photo later just works.** While any special is published without
-  one, the sync pulls `/menus` on every run instead of trusting the `lastUpdated`
-  timestamp — attaching an image in Toast doesn't reliably move that timestamp, so
-  the gate would otherwise never notice. Add the photo in Toast and the next run
-  (≤15 min) downloads it and swaps out the placeholder. No dispatch needed.
+- **Adding the photo later just works.** Attach it in Toast and the next run
+  downloads it and swaps out the placeholder. No dispatch needed. (This used to
+  need a special case: attaching an image does not move Toast's `lastUpdated`, so
+  the old timestamp gate could not see it. The gate is gone as of #153 - every run
+  pulls and compares content - so nothing special is required any more.)
 - **Seeing what was skipped:** run the workflow with **dry_run = true**
   (Actions → Toast sync → Run workflow). It lists what would publish, flags the
   ones with no photo, and lists every skipped item with the reason.
@@ -97,13 +97,14 @@ block keeps its own last-good committed state as the fallback.
   specials, and menu items keep it inline, so it renders as the green leaf). The
   `(v)` text marker on specials is also stripped and flags the item vegetarian.
 
-## Forcing a run
+## Running it on demand
 
-The specials step reuses the menu step's payload, and the menu step skips its
-pull when Toast reports the menu unchanged — so a change to the sync's own logic
-won't reach the site until Toast next republishes. Force one run with
-**Actions → Toast sync → Run workflow → force = true**. See
-[TOAST_MENU_SYNC.md](TOAST_MENU_SYNC.md#forcing-a-run-after-changing-the-sync-logic).
+The specials step reuses the payload the menu step already pulled, and the menu
+step pulls on every run, so a change in Toast reaches the site on the next cycle
+with nothing to force. To run it now rather than wait: **Actions → Toast sync →
+Run workflow**. Add **dry_run = true** to see what Toast would publish without
+committing anything. See
+[TOAST_MENU_SYNC.md](TOAST_MENU_SYNC.md#change-detection-is-on-content-never-on-toasts-timestamp).
 
 ## Test it offline (no network)
 
@@ -154,8 +155,7 @@ No need to hunt for the commit that deleted it.
 Toast is the only way in. A Google Apps Script form used to publish specials
 straight to `main`, and the earlier Instagram-based `flytrap-specials` skill before
 that; both are retired. The form was removed because anything it wrote was
-overwritten by the next sync within 15 minutes — it read like a safety net but
-wasn't one.
+overwritten by the next sync — it read like a safety net but wasn't one.
 
 If Toast is unreachable, the last good specials stay live (see Fallback above).
 To change what's on the site, change it in Toast.
@@ -171,8 +171,9 @@ description and a blank site. In order:
    deploy and fails if React does not mount.
 3. **Automatic rollback** restores the synced files from the last commit
    confirmed working, pushes, and pauses the sync.
-4. **The scheduled monitor** checks every 15 minutes and opens an issue
-   assigned to Ryan and Sean.
+4. **The scheduled monitor** checks on its own cron and opens an issue assigned
+   to Ryan and Sean. It asks for every 15 minutes and gets roughly every 3 hours;
+   see [ARCHITECTURE.md](ARCHITECTURE.md#the-schedule-is-not-15-minutes).
 
 ### The sync is paused — what now
 
@@ -185,8 +186,7 @@ To resume:
 1. Read the incident issue and the pause file — both say what failed.
 2. Fix the cause. Usually the Toast item; occasionally the sync script.
 3. Delete `.github/SYNC_PAUSED` and commit.
-4. Run **Toast sync** with `force=true` to pull a fresh copy — the normal
-   `lastUpdated` gate would otherwise skip until Toast changes again.
+4. Run **Toast sync** to pull a fresh copy without waiting for the next cron tick.
 
 ### Rolling back by hand
 
