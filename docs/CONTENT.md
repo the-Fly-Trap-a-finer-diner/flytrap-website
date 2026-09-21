@@ -28,12 +28,12 @@ this one.
 ## Toast-owned content (no code change needed)
 
 The weekly specials, the soup, the mini-muffin and the entire standing menu come
-from Toast automatically, roughly every 15 minutes. **Kara maintains these in Toast;
+from Toast automatically, on the schedule below. **Kara maintains these in Toast;
 nobody edits the repo.** The conventions Toast expects:
 
 | Thing | Convention in Toast |
 |---|---|
-| **A special appears on the site** | Put the item in the **"Weekly Specials"** group and give it a price. A photo is optional — without one the card shows a brand placeholder tile until you add one, and the sync swaps it in automatically within ~15 min. |
+| **A special appears on the site** | Put the item in the **"Weekly Specials"** group and give it a price. A photo is optional — without one the card shows a brand placeholder tile until you add one, and the sync swaps it in automatically on the next run. |
 | **Pull a special down** | Move it out of the "Weekly Specials" group. (Removing just the photo no longer pulls it — it publishes without one.) |
 | **Soup flavour** | The description of the **"Soup O' The Day"** item. |
 | **Soup prices** | Item base price = Cup. The **"Bowl"** option of the **"Soup Sizes"** modifier group adds its upcharge to the base (e.g. $5 base + $1 = $6 Bowl). |
@@ -41,9 +41,21 @@ nobody edits the repo.** The conventions Toast expects:
 | **Muffin** | The "Muffin" item (matched loosely) — price + description as the flavour. |
 | **Vegetarian** | Append the 🥬 glyph to the item's Toast description. On specials, the `(v)` text marker also works and is stripped from the shown text. |
 
-A change in Toast is live on the site within ~15 minutes (GitHub's scheduler is
-best-effort; occasionally longer). To force it: **Actions → Toast sync → Run
-workflow**. To see what Toast would publish without committing anything, run it with
+### How long until a change shows up
+
+**If you need it live now, press the button: Actions → Toast sync → Run workflow.**
+It takes about a minute.
+
+Left alone it will get there on its own, but not quickly. The sync asks GitHub to
+run it every 15 minutes; GitHub actually runs it about every 3 hours, and has gone
+as long as 11. That is GitHub throttling scheduled jobs, not a bug in the sync, and
+nothing in this repo can speed it up - see
+[ARCHITECTURE.md](ARCHITECTURE.md#the-schedule-is-not-15-minutes).
+
+So: soup up before the doors open, or a special pulled mid-service, press the
+button. Anything that can wait until tomorrow, leave it.
+
+To see what Toast would publish without committing anything, run it with
 **dry_run = true**.
 
 Details: [SPECIALS_SYNC.md](SPECIALS_SYNC.md) · [TOAST_MENU_SYNC.md](TOAST_MENU_SYNC.md)
@@ -60,8 +72,8 @@ splice function throws without them, which breaks the sync.
 ### There is no manual override
 
 Toast is the only way to change a special. A Google Apps Script form used to publish
-directly to `main`; it was removed because the next sync overwrote whatever it wrote
-within 15 minutes, so it offered false reassurance rather than a real fallback.
+directly to `main`; it was removed because the next sync overwrote whatever it
+wrote, so it offered false reassurance rather than a real fallback.
 
 If Toast is down, the last good specials stay on the site untouched — that is the
 fallback.
