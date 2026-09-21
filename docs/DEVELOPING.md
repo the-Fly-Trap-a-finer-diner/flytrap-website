@@ -64,8 +64,8 @@ tag in the right position — CI checks the order of the existing seven.
 
 **2. `data.js` is partly machine-written.**
 The regions between `/* SPECIALS:START */…/* SPECIALS:END */` and
-`/* EXTRAS:START */…/* EXTRAS:END */` are rewritten by the Toast sync every 15
-minutes. Anything you type there is gone by the next run. Never delete the marker
+`/* EXTRAS:START */…/* EXTRAS:END */` are rewritten by the Toast sync. Anything
+you type there is gone by the next run. Never delete the marker
 comments — `spliceSpecials()` throws if they're missing, which breaks the sync.
 
 **3. `assets/menu.json` is machine-written too.** Same deal. To change what the menu

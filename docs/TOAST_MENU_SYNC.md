@@ -13,7 +13,7 @@ it changes.
 ## How it works
 
 ```
-Toast  ──[GitHub Action, every 15 min]──▶  assets/menu.json (committed)
+Toast  ────[GitHub Action, on a cron]────▶  assets/menu.json (committed)
                                               │
                                    page load: fetch(assets/menu.json)
                                               │  success → live menu
@@ -26,7 +26,7 @@ Toast  ──[GitHub Action, every 15 min]──▶  assets/menu.json (committed
      and write **`assets/menu.json`** — only when the content actually changed, so
      most runs commit nothing.
 - **`.github/workflows/toast-sync.yml`** runs this **and** the specials / soup /
-  muffin pull every 15 minutes (+ manual dispatch) in one job. It makes a single
+  muffin pull on the same schedule (+ manual dispatch) in one job. It makes a single
   commit of `assets/menu.json` (plus `data.js` + specials images) when anything
   changed, rebases onto `main` before pushing, and triggers the Pages deploy.
 - **The site** (`Menu.jsx` → `useLiveMenu`) fetches `assets/menu.json` at page
@@ -99,7 +99,7 @@ Toast does not republish for everything a manager changes in Toast Web. On
 2026-09-18 Kara pulled a special from Weekly Specials and changed the Soup O' The
 Day; `/menus` served the new content immediately while `lastUpdated` sat at
 `2026-09-18T21:12:48Z` for three days. The site kept showing the pulled special
-and the old soup message, and every 15-minute run went green having done nothing.
+and the old soup message, and every run went green having done nothing.
 (The gate had one escape hatch - keep pulling while a special sits at
 `photo: ""`, because attaching a photo does not move the timestamp either - which
 is why the failure only surfaced on a week where every special had its photo.)

@@ -11,7 +11,7 @@ name: Toast sync
 # specials-sync + toast-menu-sync workflows. A `git pull --rebase` before push
 # also absorbs any human commit that landed on main mid-run.
 #
-# Every 15 minutes it pulls the full Toast menu and compares it to what is
+# On every run it pulls the full Toast menu and compares it to what is
 # committed; if the content is identical it commits nothing and skips. The
 # comparison is on content, never on Toast's lastUpdated timestamp - that tracks
 # menu publishes, not edits, and it missed a pulled special and a changed soup for
@@ -25,11 +25,22 @@ name: Toast sync
 
 on:
   schedule:
-    # Target ~every 15 minutes, offset off the top of the hour. GitHub's
-    # scheduler is best-effort and drops sub-hourly runs under load; the :00
-    # slot is the most congested, so 2/17/32/47 tends to lose fewer runs than
-    # */15. Still not guaranteed on time. Most runs are a no-op (nothing
-    # committed unless Toast actually changed).
+    # We ask for every 15 minutes. GitHub gives us roughly one run every three
+    # hours: measured over 27 days this workflow fired 0.30 times/hour against
+    # the 4.0 it asks for, at minutes scattered uniformly across the hour rather
+    # than at 2/17/32/47.
+    #
+    # Do not try to fix that here. site-health.yml asks for the same frequency at
+    # different minutes and gets an identical 0.31/hour, firing a median of 7
+    # minutes away from this one - the scheduler wakes per REPO, not per workflow,
+    # so more cron lines and different offsets change nothing. Escaping it needs a
+    # trigger outside GitHub's scheduler; declined in Sept 2026 as not worth the
+    # moving parts. See docs/ARCHITECTURE.md#the-schedule-is-not-15-minutes.
+    #
+    # This costs freshness only, never correctness: change detection is on content,
+    # so whichever run does fire catches everything since the last one. Press
+    # Actions -> Toast sync -> Run workflow when something needs to be live now.
+    # Most runs are a no-op (nothing committed unless Toast actually changed).
     - cron: '2,17,32,47 * * * *'
   workflow_dispatch:
     inputs:
@@ -50,7 +61,7 @@ jobs:
   # Circuit breaker. An automatic rollback creates .github/SYNC_PAUSED when a
   # synced deploy fails verification. Without this gate the next scheduled run
   # re-pulls the same bad Toast data, the rollback fires again, and the two trade
-  # commits every fifteen minutes until a human notices.
+  # commits on every run until a human notices.
   #
   # Its own job rather than a first step so a paused run shows as SKIPPED. A step
   # that exited non-zero would post a red X and a failure email four times an
