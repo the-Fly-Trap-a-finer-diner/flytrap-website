@@ -115,6 +115,7 @@ window.FT_DATA = {
   weekOf: "Week of July 6",
   specials: [
     { id: "special-1", name: "The Hong Chau", desc: "A rumble of Burmese tofu with roasted mushrooms, baby yu choy, snap peas and sweet herbs tossed in a tamarind, lemon grass curry topped with fried lotus chips; browns and toast.🥬", veg: true, photo: "assets/specials/toast-the-hong-chau.jpg", price: "13.95" },
+    { id: "special-2", name: "the J.P. Peranzi", desc: "Breakfast Bucatini! Pasta tossed with White Wine, Garlic and Calabrian Chili Oil with Mushrooms, Tomato and Fresh Herbs topped with Parmesan, a Sunny Egg and a Link of Hot Italian Sausage, Mangia!", veg: false, photo: "assets/specials/toast-the-j-p-peranzi.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */

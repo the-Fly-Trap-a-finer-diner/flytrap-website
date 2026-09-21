@@ -398,5 +398,15 @@
     "veg": true,
     "photo": "assets/specials/toast-the-hong-chau.jpg",
     "photoBlob": "cba22bc43aa0a2dda73e0060d636255fb0ff3a9f"
+  },
+  {
+    "firstSeen": "2026-09-21",
+    "lastSeen": "2026-09-21",
+    "name": "the J.P. Peranzi",
+    "desc": "Breakfast Bucatini! Pasta tossed with White Wine, Garlic and Calabrian Chili Oil with Mushrooms, Tomato and Fresh Herbs topped with Parmesan, a Sunny Egg and a Link of Hot Italian Sausage, Mangia!",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-j-p-peranzi.jpg",
+    "photoBlob": "93bcce509f4ed2d838c7586f3d71bacd119bcb29"
   }
 ]
