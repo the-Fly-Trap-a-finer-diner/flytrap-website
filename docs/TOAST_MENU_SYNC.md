@@ -82,26 +82,35 @@ for now. Options to clean it up, once they decide:
 - **In code:** add filters to `toast-sync.mjs` (drop `price == 0`, drop
   modifier/add-on groups, dedupe variants).
 
-## Forcing a run after changing the sync logic
+## Change detection is on content, never on Toast's timestamp
 
-The menu step skips the `/menus` pull whenever Toast's `lastUpdated` matches the
-timestamp in the committed `assets/menu.json`, and the specials step then has no
-payload to work from. That is the right default — it keeps most runs down to two
-light API calls — but it assumes *"Toast hasn't changed, so nothing we derive
-from it has changed"*, which is false the moment **the sync's own logic**
-changes. A fix then can't reach the site until Toast next republishes.
+Every run pulls the full `/menus` payload and compares it to what is committed.
+`assets/menu.json` is rewritten only on a byte difference, and the specials step
+returns early when the spliced `data.js` is identical - so an unchanged menu
+still commits nothing, and there is nothing to force.
 
-The gate has one automatic exception: while `data.js` holds a special with
-`photo: ""`, the pull happens every run regardless of the timestamp, so a photo
-attached in Toast is picked up on the next cycle (`specialsAwaitingPhoto()`).
+It used to work the other way: the menu step skipped the `/menus` pull whenever
+`/menus/v2/metadata`'s `lastUpdated` matched the timestamp in the committed
+`assets/menu.json`, and the specials step, which reuses that payload, then had
+nothing to work from.
 
-After changing how the sync interprets the menu, force one run:
+**That gate was wrong.** `lastUpdated` tracks menu *publishes*, not edits, and
+Toast does not republish for everything a manager changes in Toast Web. On
+2026-09-18 Kara pulled a special from Weekly Specials and changed the Soup O' The
+Day; `/menus` served the new content immediately while `lastUpdated` sat at
+`2026-09-18T21:12:48Z` for three days. The site kept showing the pulled special
+and the old soup message, and every 15-minute run went green having done nothing.
+(The gate had one escape hatch - keep pulling while a special sits at
+`photo: ""`, because attaching a photo does not move the timestamp either - which
+is why the failure only surfaced on a week where every special had its photo.)
 
-**Actions → Toast sync → Run workflow → force = true**
+The cost of pulling every time is one `/menus` call per run: 96 a day against
+Toast's cap of **1 request/sec per location**. The 429s that originally motivated
+the gate came from calling `/menus` *twice in one run* (menu step + specials
+step); that is fixed separately by sharing the payload between the two steps.
 
-That sets `TOAST_FORCE=1`, which pulls `/menus` regardless of the timestamp. It
-costs one extra API call. Scheduled runs never set it, so the rate-limit
-behaviour is unchanged. Locally: `TOAST_FORCE=1 node .github/scripts/toast-sync.mjs`.
+`lastUpdated` is still read and still written into `menu.json` - it is useful in a
+log or a diff - it just no longer decides whether the sync pulls.
 
 ## Test / verify
 

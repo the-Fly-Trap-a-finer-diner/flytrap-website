@@ -187,7 +187,7 @@ test('end to end: a bad bot sync is restored, paused and pushed', async () => {
   // The circuit breaker is set and explains itself.
   assert.ok(await exists(join(ctx.work, '.github', 'SYNC_PAUSED')));
   const pause = await readFile(join(ctx.work, '.github', 'SYNC_PAUSED'), 'utf8');
-  assert.match(pause, /force=true/);
+  assert.match(pause, /Run the Toast sync to pull a fresh, correct copy\./);
 
   // And it actually reached the remote — a rollback that only exists locally is
   // no rollback at all.

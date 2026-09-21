@@ -162,5 +162,5 @@ jobs:
           echo
           echo "To roll back: revert $DEPLOYED_SHA on main — Pages redeploys on push."
           echo "If the Toast sync wrote it, fix the Toast item, then re-run the sync"
-          echo "with force=true to regenerate data.js."
+          echo "to regenerate data.js."
           exit 1
