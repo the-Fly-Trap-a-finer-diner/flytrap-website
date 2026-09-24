@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-09-23T18:09:38.984+0000",
+  "lastUpdated": "2026-09-24T16:39:10.301+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -719,31 +719,13 @@
     },
     {
       "cat": "get-canned",
-      "nm": "Roselle Zippy Pink Sour Beer",
-      "desc": "",
-      "price": "6.00"
-    },
-    {
-      "cat": "get-canned",
       "nm": "Bitburger Pilsner",
       "desc": "",
       "price": "8.00"
     },
     {
       "cat": "get-canned",
-      "nm": "Nutrl",
-      "desc": "",
-      "price": "6.00"
-    },
-    {
-      "cat": "get-canned",
-      "nm": "Blakes Original",
-      "desc": "",
-      "price": "5.00"
-    },
-    {
-      "cat": "get-canned",
-      "nm": "Rogue Hazelnut Brown",
+      "nm": "Moose Drool Brown Ale",
       "desc": "",
       "price": "6.00"
     },
@@ -755,15 +737,33 @@
     },
     {
       "cat": "get-canned",
+      "nm": "Roselle Zippy Pink Sour Beer",
+      "desc": "",
+      "price": "6.00"
+    },
+    {
+      "cat": "get-canned",
       "nm": "Nitro Milk Stout",
       "desc": "",
       "price": "7.00"
     },
     {
       "cat": "get-canned",
+      "nm": "Blakes Original",
+      "desc": "",
+      "price": "5.00"
+    },
+    {
+      "cat": "get-canned",
       "nm": "Starcut Pulsar",
       "desc": "",
       "price": "5.00"
+    },
+    {
+      "cat": "get-canned",
+      "nm": "Nutrl",
+      "desc": "",
+      "price": "6.00"
     },
     {
       "cat": "get-canned",
