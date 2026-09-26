@@ -408,5 +408,25 @@
     "veg": false,
     "photo": "assets/specials/toast-the-j-p-peranzi.jpg",
     "photoBlob": "93bcce509f4ed2d838c7586f3d71bacd119bcb29"
+  },
+  {
+    "firstSeen": "2026-09-26",
+    "lastSeen": "2026-09-26",
+    "name": "The Jean Reno",
+    "desc": "Eggs how you like 'em on a smoky aubergine and chickpea tagine. With Couscous feta cake and a harissa yogurt. Toast? Yup! 🥬",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-jean-reno.jpg",
+    "photoBlob": "2d038e62c48d96f02b0d8eb163a1f2caaf2b7478"
+  },
+  {
+    "firstSeen": "2026-09-26",
+    "lastSeen": "2026-09-26",
+    "name": "The David Hidalgo",
+    "desc": "A chili spiced buffalo meatloaf sandwich with jack cheese, a sunny egg and a creamy avocado, poblano and lime salsa served up on a house roll. Pick a side.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-david-hidalgo.jpg",
+    "photoBlob": "aa3284f22ac8902231d7495d620f1eee2535966d"
   }
 ]

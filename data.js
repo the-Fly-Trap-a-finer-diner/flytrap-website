@@ -114,12 +114,13 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Hong Chau", desc: "A rumble of Burmese tofu with roasted mushrooms, baby yu choy, snap peas and sweet herbs tossed in a tamarind, lemon grass curry topped with fried lotus chips; browns and toast.🥬", veg: true, photo: "assets/specials/toast-the-hong-chau.jpg", price: "13.95" },
+    { id: "special-1", name: "The Jean Reno", desc: "Eggs how you like 'em on a smoky aubergine and chickpea tagine. With Couscous feta cake and a harissa yogurt. Toast? Yup! 🥬", veg: true, photo: "assets/specials/toast-the-jean-reno.jpg", price: "14.95" },
+    { id: "special-2", name: "The David Hidalgo", desc: "A chili spiced buffalo meatloaf sandwich with jack cheese, a sunny egg and a creamy avocado, poblano and lime salsa served up on a house roll. Pick a side.", veg: false, photo: "assets/specials/toast-the-david-hidalgo.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Banana Chocolate Chip🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Corn Chowder🥬", available: true, cup: "5.00", bowl: "6.00" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Banana and Pistachio🥬", price: "0.99" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekend!", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the
