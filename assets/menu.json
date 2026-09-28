@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-09-27T20:50:00.389+0000",
+  "lastUpdated": "2026-09-28T12:39:28.611+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -1067,12 +1067,6 @@
     },
     {
       "cat": "rum",
-      "nm": "Captain Morgan",
-      "desc": "",
-      "price": "7.00"
-    },
-    {
-      "cat": "rum",
       "nm": "Sailor Jerry",
       "desc": "",
       "price": "7.00"
@@ -1082,12 +1076,6 @@
       "nm": "Myer's",
       "desc": "",
       "price": "7.00"
-    },
-    {
-      "cat": "rum",
-      "nm": "Zaya",
-      "desc": "",
-      "price": "9.00"
     },
     {
       "cat": "rum",
