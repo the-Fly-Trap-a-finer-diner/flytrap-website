@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-09-28T12:39:28.611+0000",
+  "lastUpdated": "2026-09-29T13:03:43.545+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -732,12 +732,6 @@
     {
       "cat": "get-canned",
       "nm": "Voodoo",
-      "desc": "",
-      "price": "6.00"
-    },
-    {
-      "cat": "get-canned",
-      "nm": "Roselle Zippy Pink Sour Beer",
       "desc": "",
       "price": "6.00"
     },
