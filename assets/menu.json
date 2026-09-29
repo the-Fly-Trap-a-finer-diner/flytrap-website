@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-09-29T13:03:43.545+0000",
+  "lastUpdated": "2026-09-29T17:17:31.789+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -1256,6 +1256,12 @@
       "nm": "Malort",
       "desc": "",
       "price": "8.00"
+    },
+    {
+      "cat": "brown-booze",
+      "nm": "Michigan Straight Rye Whiskey",
+      "desc": "",
+      "price": "7.00"
     },
     {
       "cat": "brown-booze",
