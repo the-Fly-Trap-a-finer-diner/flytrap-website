@@ -227,7 +227,8 @@ button { font-family: inherit; }
   line-height: 1.6;
 }
 .drawer .drawer-meta .open-pill {
-  display: inline-flex; align-items: center; gap: 6px;
+  /* Block-level so the address below starts on its own line. */
+  display: flex; align-items: center; gap: 6px;
   font-weight: 600; color: var(--color-flytrap-red-deep);
   margin-bottom: 8px;
 }
