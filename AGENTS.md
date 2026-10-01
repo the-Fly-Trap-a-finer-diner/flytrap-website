@@ -124,6 +124,12 @@ Current local patches (also enforced by `.github/workflows/guardrails.yml`):
   default secondary CTA. Toggled by `.btn.hero-cta-mobile` / `.btn.hero-cta-desktop`
   in `site.css`. **The hero is `window.Hero = HeroWrap` in `App.jsx`** — the single
   source for the hero markup.
+- **Mobile drawer (landscape)** — `.drawer` clips and scrolls its content
+  (`overflow-y: auto`) and is `visibility: hidden` while closed, plus a
+  `@media (max-height: 500px)` spacing block and `.open-pill { display: flex }`.
+  Without it, the closed menu's Order Now button and address hang over the page on
+  landscape phones (PR #155). Marked with `PATCH (flytrap-website)` in `site.css`;
+  not yet enforced by `guardrails.yml`. Re-apply per design-sync skill Patch P3.
 
 ## Specials section rules
 

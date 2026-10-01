@@ -248,6 +248,25 @@ Toast URL canonical: `https://order.toasttab.com/online/the-fly-trap-ferndale-22
 
 If a sync removes either anchor or the CSS rules, re-add.
 
+#### Patch P3: mobile drawer contained on short (landscape) viewports
+
+Added in PR #155. Three `site.css` blocks, each marked `PATCH (flytrap-website)`:
+
+- `.drawer` has `overflow-y: auto; overscroll-behavior: contain; visibility: hidden;`
+  and `transition: transform 320ms var(--ease-out), visibility 0s linear 320ms;`.
+  `.drawer.open` sets `visibility: visible` with `transition: transform 320ms var(--ease-out), visibility 0s;`.
+  Without this, on a landscape phone the drawer's content is taller than the
+  drawer, and the overflow (Visit link, Order Now button, address) hangs below the
+  closed, translated-away drawer over the page.
+- `@media (max-height: 500px)` block after the base drawer rules (after
+  `@keyframes pulse`) tightening drawer padding, link size and spacing.
+- `.drawer .drawer-meta .open-pill` is `display: flex` (not `inline-flex`) so the
+  address starts on its own line instead of running into "Open now · 8a — 3p".
+
+If a sync drops any of these, restore them from PR #155 (`git show 7949b95 -- site.css`).
+Verify: at 844×390 the closed menu shows nothing over the page, and the open menu
+scrolls to the address.
+
 #### General rule
 
 Treat anything outside the archive's file list — or with a `PATCH (flytrap-website)` marker comment — as a local patch that survives every sync. Grep before committing:
@@ -288,7 +307,7 @@ Run preview checks via `preview_*` tools (set `cwd` = repo, URL = http://localho
 4. `preview_console_logs` at level `error` — must be EMPTY
 5. `preview_logs` at level `error` — must be EMPTY
 6. `preview_network` — no 4xx/5xx for same-origin requests
-7. Hash-route smoke test: `#daily-buzz` route loads without errors
+7. Landscape phone (844×390): mobile menu closed → nothing from it shows over the page; open → scrolls to Order Now + address
 
 Stop the server when done:
 ```bash
@@ -307,7 +326,7 @@ Spot-check sections that didn't change in the archive — they must still render
 - Specials (NEW — verify both cards render with images)
 - About, Retail, Press, Visit
 - Footer
-- `#daily-buzz` route
+- Mobile menu (drawer) at 844×390 landscape, open and closed
 
 Capture screenshots at 375 / 768 / 1280 for each major section. Attach to PR.
 

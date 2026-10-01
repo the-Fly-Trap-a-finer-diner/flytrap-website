@@ -23,7 +23,7 @@ Ran the site locally and checked at **375 / 768 / 1280**:
 - [ ] Console: zero errors (Babel-in-browser warning is expected)
 - [ ] No horizontal overflow at 375 (`scrollWidth === clientWidth`)
 - [ ] Changed section renders + matches intent (screenshots below)
-- [ ] `#daily-buzz` hash route still loads
+- [ ] If it touches the nav or mobile menu: also checked a landscape phone size (e.g. 844×390), menu open and closed
 - [ ] If I couldn't verify something, I said so explicitly below
 
 <!-- Drop screenshots here. -->
