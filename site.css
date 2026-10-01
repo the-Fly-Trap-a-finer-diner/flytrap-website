@@ -160,11 +160,22 @@ button { font-family: inherit; }
   background: var(--color-cream-paper);
   display: flex; flex-direction: column;
   padding: 80px 24px 32px;
+  /* Contain the content: on short (landscape) viewports it is taller than the
+     drawer, and unclipped overflow would hang below the closed drawer over the page. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translateY(-100%);
-  transition: transform 320ms var(--ease-out);
+  visibility: hidden;
+  /* Delay visibility on close so the slide-up still animates. */
+  transition: transform 320ms var(--ease-out), visibility 0s linear 320ms;
   pointer-events: none;
 }
-.drawer.open { transform: translateY(0); pointer-events: auto; }
+.drawer.open {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform 320ms var(--ease-out), visibility 0s;
+  pointer-events: auto;
+}
 .drawer ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .drawer ul li { border-bottom: 1px dashed rgba(26,26,26,.18); }
 .drawer ul li:first-child { border-top: 1px dashed rgba(26,26,26,.18); }
@@ -232,6 +243,15 @@ button { font-family: inherit; }
   0% { box-shadow: 0 0 0 0 rgba(42,138,78,.6); }
   70% { box-shadow: 0 0 0 8px rgba(42,138,78,0); }
   100% { box-shadow: 0 0 0 0 rgba(42,138,78,0); }
+}
+
+/* Landscape phones: tighten the drawer (after the base
+   drawer rules so these win) so less of it needs scrolling. */
+@media (max-height: 500px) {
+  .drawer { padding: 68px 24px 20px; }
+  .drawer ul a { padding: 12px 4px; font-size: 22px; }
+  .drawer .drawer-order { margin-top: 16px; padding: 14px 24px; }
+  .drawer .drawer-meta { padding-top: 16px; }
 }
 
 /* ============================================================
