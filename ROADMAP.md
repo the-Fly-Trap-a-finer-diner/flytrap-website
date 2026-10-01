@@ -69,6 +69,11 @@ Condensed. Full history is in the merged-PR list (`gh pr list --state merged`).
 - Removed the unreachable `#daily-buzz` sub-page, its `BuzzBand` teaser, the
   `FT_DATA.buzz` / `pastry` data and ~270 lines of `db-*` / `buzz-*` CSS. Nothing
   linked to it and nobody maintained the copy.
+- Mobile menu fixed on landscape phones (#155): the closed drawer's Order Now button
+  and address no longer hang over the page, the open drawer scrolls, and "Open now ·
+  8a — 3p" no longer runs into the address. Recorded as local patch P3 so a Claude
+  Design sync can't silently undo it. The PR checklist and design-sync smoke tests
+  dropped the removed `#daily-buzz` route and gained a landscape menu check.
 
 **Design and content**
 - Retro palette adopted — electric red `#FD0003`, black, white (#47), with matching
