@@ -428,5 +428,15 @@
     "veg": false,
     "photo": "assets/specials/toast-the-david-hidalgo.jpg",
     "photoBlob": "aa3284f22ac8902231d7495d620f1eee2535966d"
+  },
+  {
+    "firstSeen": "2026-10-01",
+    "lastSeen": "2026-10-01",
+    "name": "Holiday in Cambodia",
+    "desc": "A Rumble of Eggs with House Made Lemongrass, Ginger Sausage with Sweet and Hot Peppers, Cream Cheese and Greens; comes with browns and toast.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-holiday-in-cambodia.jpg",
+    "photoBlob": "f492f194d60c1492f62b81d0b9f797efc13e9a94"
   }
 ]
