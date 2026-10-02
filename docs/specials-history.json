@@ -438,5 +438,25 @@
     "veg": false,
     "photo": "assets/specials/toast-holiday-in-cambodia.jpg",
     "photoBlob": "f492f194d60c1492f62b81d0b9f797efc13e9a94"
+  },
+  {
+    "firstSeen": "2026-10-02",
+    "lastSeen": "2026-10-02",
+    "name": "The Breaker Morant",
+    "desc": "Housemade South African boerewors sausage with a chakalaka relish, sour lime cream and eggs how you like 'em; browns and toast.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-breaker-morant.jpg",
+    "photoBlob": "2f06a45ef16182e8659324d8e3a5b5cb34ee4f35"
+  },
+  {
+    "firstSeen": "2026-10-02",
+    "lastSeen": "2026-10-02",
+    "name": "The Ignorant Fairies",
+    "desc": "A chived up omelette shell stuffed with marsala blessed wild and mild mushrooms, greens and boursin cheese; browns and toast.🥬",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-ignorant-fairies.jpg",
+    "photoBlob": "a3aaa50e113b4b2af82ff9c7d9282aa07269e90e"
   }
 ]
