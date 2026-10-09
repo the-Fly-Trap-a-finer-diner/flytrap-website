@@ -458,5 +458,25 @@
     "veg": true,
     "photo": "assets/specials/toast-the-ignorant-fairies.jpg",
     "photoBlob": "a3aaa50e113b4b2af82ff9c7d9282aa07269e90e"
+  },
+  {
+    "firstSeen": "2026-10-09",
+    "lastSeen": "2026-10-09",
+    "name": "The Chester A. Arthur",
+    "desc": "Eggs how you like 'em sitting atop a hash of braised short ribs, leeks and house spuds, topped with a horseradish cream and frizzle; yup! toast.",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-chester-a-arthur.jpg",
+    "photoBlob": "f213f4ee47cce51a1de19d1702e19447e3151ab7"
+  },
+  {
+    "firstSeen": "2026-10-09",
+    "lastSeen": "2026-10-09",
+    "name": "The Pedro Gonalez Gonzales",
+    "desc": "A rumble of eggs with roasted artichokes, roasted poblanos, caramelized onion, pepper jack cheese and tortillas. Topped with avocado; browns and toast.",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-pedro-gonalez-gonzales.jpg",
+    "photoBlob": "df453fcb7d5f676ef7718a7aabd772a425348f58"
   }
 ]

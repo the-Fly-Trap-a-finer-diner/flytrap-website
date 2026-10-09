@@ -114,13 +114,13 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Breaker Morant", desc: "Housemade South African boerewors sausage with a chakalaka relish, sour lime cream and eggs how you like 'em; browns and toast.", veg: false, photo: "assets/specials/toast-the-breaker-morant.jpg", price: "14.95" },
-    { id: "special-2", name: "The Ignorant Fairies", desc: "A chived up omelette shell stuffed with marsala blessed wild and mild mushrooms, greens and boursin cheese; browns and toast.🥬", veg: true, photo: "assets/specials/toast-the-ignorant-fairies.jpg", price: "14.95" },
+    { id: "special-1", name: "The Chester A. Arthur", desc: "Eggs how you like 'em sitting atop a hash of braised short ribs, leeks and house spuds, topped with a horseradish cream and frizzle; yup! toast.", veg: false, photo: "assets/specials/toast-the-chester-a-arthur.jpg", price: "15.95" },
+    { id: "special-2", name: "The Pedro Gonalez Gonzales", desc: "A rumble of eggs with roasted artichokes, roasted poblanos, caramelized onion, pepper jack cheese and tortillas. Topped with avocado; browns and toast.", veg: true, photo: "assets/specials/toast-the-pedro-gonalez-gonzales.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Banana Bread🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Roasted Cauliflower with Scallion Oil 🥬", available: true, cup: "5.00", bowl: "6.00" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Fat Elvis🥬", price: "0.99" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekend! 🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the
