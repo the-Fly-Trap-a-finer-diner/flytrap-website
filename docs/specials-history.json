@@ -461,7 +461,7 @@
   },
   {
     "firstSeen": "2026-10-09",
-    "lastSeen": "2026-10-09",
+    "lastSeen": "2026-10-10",
     "name": "The Chester A. Arthur",
     "desc": "Eggs how you like 'em sitting atop a hash of braised short ribs, leeks and house spuds, topped with a horseradish cream and frizzle; yup! toast.",
     "price": "15.95",
@@ -477,6 +477,16 @@
     "price": "14.95",
     "veg": true,
     "photo": "assets/specials/toast-the-pedro-gonalez-gonzales.jpg",
+    "photoBlob": "df453fcb7d5f676ef7718a7aabd772a425348f58"
+  },
+  {
+    "firstSeen": "2026-10-10",
+    "lastSeen": "2026-10-10",
+    "name": "The Pedro Gonalez Gonzalez",
+    "desc": "A rumble of eggs with roasted artichokes, roasted poblanos, caramelized onion, pepper jack cheese and tortillas topped with avocado; browns and toast.",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-pedro-gonalez-gonzalez.jpg",
     "photoBlob": "df453fcb7d5f676ef7718a7aabd772a425348f58"
   }
 ]

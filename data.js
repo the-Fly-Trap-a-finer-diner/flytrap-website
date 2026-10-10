@@ -115,7 +115,7 @@ window.FT_DATA = {
   weekOf: "Week of July 6",
   specials: [
     { id: "special-1", name: "The Chester A. Arthur", desc: "Eggs how you like 'em sitting atop a hash of braised short ribs, leeks and house spuds, topped with a horseradish cream and frizzle; yup! toast.", veg: false, photo: "assets/specials/toast-the-chester-a-arthur.jpg", price: "15.95" },
-    { id: "special-2", name: "The Pedro Gonalez Gonzales", desc: "A rumble of eggs with roasted artichokes, roasted poblanos, caramelized onion, pepper jack cheese and tortillas. Topped with avocado; browns and toast.", veg: true, photo: "assets/specials/toast-the-pedro-gonalez-gonzales.jpg", price: "14.95" },
+    { id: "special-2", name: "The Pedro Gonalez Gonzalez", desc: "A rumble of eggs with roasted artichokes, roasted poblanos, caramelized onion, pepper jack cheese and tortillas topped with avocado; browns and toast.", veg: true, photo: "assets/specials/toast-the-pedro-gonalez-gonzalez.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
