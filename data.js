@@ -114,7 +114,7 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Pedro Gonalez Gonzalez", desc: "A rumble of eggs with roasted artichokes, roasted poblanos, caramelized onion, pepper jack cheese and tortillas topped with avocado; browns and toast.🥬", veg: true, photo: "assets/specials/toast-the-pedro-gonalez-gonzalez.jpg", price: "14.95" },
+    { id: "special-1", name: "the Tom Tuttle", desc: "It's a Turkey Pastrami Hash! with House Spuds, Sweet and Hot Peppers & Greens topped with Melty Pepper Jack Cheese, Two Eggs Any Style and Scallions; yup toast!", veg: false, photo: "assets/specials/toast-the-tom-tuttle.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */

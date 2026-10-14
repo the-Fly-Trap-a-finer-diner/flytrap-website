@@ -488,5 +488,15 @@
     "veg": true,
     "photo": "assets/specials/toast-the-pedro-gonalez-gonzalez.jpg",
     "photoBlob": "df453fcb7d5f676ef7718a7aabd772a425348f58"
+  },
+  {
+    "firstSeen": "2026-10-14",
+    "lastSeen": "2026-10-14",
+    "name": "the Tom Tuttle",
+    "desc": "It's a Turkey Pastrami Hash! with House Spuds, Sweet and Hot Peppers & Greens topped with Melty Pepper Jack Cheese, Two Eggs Any Style and Scallions; yup toast!",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-tom-tuttle.jpg",
+    "photoBlob": "a1831d6e70ca1b4fe8a9048ca6db92abc5d5a60d"
   }
 ]
