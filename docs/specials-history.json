@@ -498,5 +498,25 @@
     "veg": false,
     "photo": "assets/specials/toast-the-tom-tuttle.jpg",
     "photoBlob": "a1831d6e70ca1b4fe8a9048ca6db92abc5d5a60d"
+  },
+  {
+    "firstSeen": "2026-10-16",
+    "lastSeen": "2026-10-16",
+    "name": "Chochoyotes",
+    "desc": "Eggs swimming in a bowl of sofrito black beans and masa \"belly button\" dumplings with guajillo dressed greens and cotija cheese topped with tomatillo avocado cream and served with a couple of buttered tortillas! 🥬",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-chochoyotes.jpg",
+    "photoBlob": "967ba2a5236a276feca7443a7906b08ccffe6e77"
+  },
+  {
+    "firstSeen": "2026-10-16",
+    "lastSeen": "2026-10-16",
+    "name": "The Chuti Tiu",
+    "desc": "Pinoy style chicken tocino, a couple of eggs, scallion garlic rice cakes and a green papaya, lime slaw; yup, toast!",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-chuti-tiu.jpg",
+    "photoBlob": "cd9f8a61bb2800e13149a22ca5eb5558b1a15a49"
   }
 ]

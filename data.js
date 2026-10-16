@@ -114,12 +114,13 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "the Tom Tuttle", desc: "It's a Turkey Pastrami Hash! with House Spuds, Sweet and Hot Peppers & Greens topped with Melty Pepper Jack Cheese, Two Eggs Any Style and Scallions; yup toast!", veg: false, photo: "assets/specials/toast-the-tom-tuttle.jpg", price: "14.95" },
+    { id: "special-1", name: "Chochoyotes", desc: "Eggs swimming in a bowl of sofrito black beans and masa \"belly button\" dumplings with guajillo dressed greens and cotija cheese topped with tomatillo avocado cream and served with a couple of buttered tortillas! 🥬", veg: true, photo: "assets/specials/toast-chochoyotes.jpg", price: "14.95" },
+    { id: "special-2", name: "The Chuti Tiu", desc: "Pinoy style chicken tocino, a couple of eggs, scallion garlic rice cakes and a green papaya, lime slaw; yup, toast!", veg: false, photo: "assets/specials/toast-the-chuti-tiu.jpg", price: "15.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
-  muffinSpecial: { name: "Mini Muffins", flavor: "Fat Elvis🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Thai-ish Mushroom Barley🥬", available: true, cup: "5.00", bowl: "6.00" },
+  muffinSpecial: { name: "Mini Muffins", flavor: "Mixed Berry Crumble🥬", price: "0.99" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry! No soup on the weekends!🥬", available: true, cup: "5.00", bowl: "6.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the

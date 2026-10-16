@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-10-16T18:24:27.928+0000",
+  "lastUpdated": "2026-10-16T21:00:09.190+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -768,6 +768,12 @@
     {
       "cat": "get-canned",
       "nm": "Ted Segers N/A",
+      "desc": "",
+      "price": "5.00"
+    },
+    {
+      "cat": "get-canned",
+      "nm": "Smashd N/A ",
       "desc": "",
       "price": "5.00"
     },
