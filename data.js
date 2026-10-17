@@ -116,6 +116,7 @@ window.FT_DATA = {
   specials: [
     { id: "special-1", name: "Chochoyotes", desc: "Eggs swimming in a bowl of sofrito black beans and masa \"belly button\" dumplings with guajillo dressed greens and cotija cheese topped with tomatillo avocado cream and served with a couple of buttered tortillas! 🥬", veg: true, photo: "assets/specials/toast-chochoyotes.jpg", price: "14.95" },
     { id: "special-2", name: "The Chuti Tiu", desc: "Pinoy style chicken tocino, a couple of eggs, scallion garlic rice cakes and a green papaya, lime slaw; yup, toast!", veg: false, photo: "assets/specials/toast-the-chuti-tiu.jpg", price: "15.95" },
+    { id: "special-3", name: "the Tom Tuttle", desc: "It's a Turkey Pastrami Hash! with House Spuds, Sweet and Hot Peppers & Greens topped with Melty Pepper Jack Cheese, Two Eggs Any Style and Scallions; yup toast!", veg: false, photo: "assets/specials/toast-the-tom-tuttle.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
