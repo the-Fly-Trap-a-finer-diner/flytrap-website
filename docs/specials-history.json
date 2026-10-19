@@ -518,5 +518,15 @@
     "veg": false,
     "photo": "assets/specials/toast-the-chuti-tiu.jpg",
     "photoBlob": "cd9f8a61bb2800e13149a22ca5eb5558b1a15a49"
+  },
+  {
+    "firstSeen": "2026-10-19",
+    "lastSeen": "2026-10-19",
+    "name": "The Indian Summer",
+    "desc": "A gin poached shrimp and cucumber salad tossed in a tomatillo crema sitting on guajillo dressed greens topped with avocado, cotija, and crunchy rice bits; grilled flat bread for scooping.",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-indian-summer.jpg",
+    "photoBlob": "09bf70d4b4abfc78e13e70e13577af06459c5037"
   }
 ]
