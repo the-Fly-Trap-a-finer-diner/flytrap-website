@@ -115,7 +115,6 @@ window.FT_DATA = {
   weekOf: "Week of July 6",
   specials: [
     { id: "special-1", name: "The Indian Summer", desc: "A gin poached shrimp and cucumber salad tossed in a tomatillo crema sitting on guajillo dressed greens topped with avocado, cotija, and crunchy rice bits; grilled flat bread for scooping.", veg: false, photo: "assets/specials/toast-the-indian-summer.jpg", price: "15.95" },
-    { id: "special-2", name: "The Chuti Tiu", desc: "Pinoy style chicken tocino, a couple of eggs, scallion garlic rice cakes and a green papaya, lime slaw; yup, toast!", veg: false, photo: "assets/specials/toast-the-chuti-tiu.jpg", price: "15.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
