@@ -528,5 +528,25 @@
     "veg": false,
     "photo": "assets/specials/toast-the-indian-summer.jpg",
     "photoBlob": "09bf70d4b4abfc78e13e70e13577af06459c5037"
+  },
+  {
+    "firstSeen": "2026-10-23",
+    "lastSeen": "2026-10-23",
+    "name": "The Karen Liinangi",
+    "desc": "Chocolate poundcake french toast with raspberry puree, whipped cream, red hots and cinnamon syrup.",
+    "price": "12.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-karen-liinangi.jpg",
+    "photoBlob": "ce28e6d0c2cacb0309019647a70a85187d1b466c"
+  },
+  {
+    "firstSeen": "2026-10-23",
+    "lastSeen": "2026-10-23",
+    "name": "Shannon's Ink Black Heart",
+    "desc": "House made smoked spooky sausage with ghost pepper and jack cheese, served up with a couple eggs and an ancho sauced monster mish-mash of sweet potato, roasted corn and red skins; toast!",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-shannon-s-ink-black-heart.jpg",
+    "photoBlob": "85664c18b3ed48a859a3f2926ec3398e01866358"
   }
 ]
