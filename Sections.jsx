@@ -339,7 +339,7 @@ function Footer({ onNavigate }) {
           <span>© 2026 The Fly Trap · Buzzin' since 2004 · Ferndale, MI</span>
           <span className="footer-credit">
             Designed and developed by{" "}
-            <a href="https://summitsoftwaresolutions.dev" target="_blank" rel="noopener">Ryan Kolean</a>
+            <a href="https://summitsoftwaresolutions.dev/work/the-fly-trap" target="_blank" rel="noopener">Ryan Kolean</a>
           </span>
         </div>
       </div>
