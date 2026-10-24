@@ -116,11 +116,12 @@ window.FT_DATA = {
   specials: [
     { id: "special-1", name: "The Karen Liinangi", desc: "Chocolate poundcake french toast with raspberry puree, whipped cream, red hots and cinnamon syrup.", veg: true, photo: "assets/specials/toast-the-karen-liinangi.jpg", price: "12.95" },
     { id: "special-2", name: "Shannon's Ink Black Heart", desc: "House made smoked spooky sausage with ghost pepper and jack cheese, served up with a couple eggs and an ancho sauced monster mish-mash of sweet potato, roasted corn and red skins; toast!", veg: false, photo: "assets/specials/toast-shannon-s-ink-black-heart.jpg", price: "15.95" },
+    { id: "special-3", name: "Special Sausage", desc: "", veg: true, photo: "", price: "6" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
   muffinSpecial: { name: "Mini Muffins", flavor: "Jalapeño Popper🥬", price: "0.99" },
-  soupSpecial: { name: "Soup of the Day", flavor: "Sorry, no soup on the weekend!", available: true, cup: "5.00", bowl: "6.00" },
+  soupSpecial: { name: "Soup of the Day", flavor: "Sorry, no soup on the weekend!", available: true, cup: "6.00", bowl: "7.00" },
   /* EXTRAS:END */
   // "A few of our favorites" slider. Captions are the labels Sean sent with each
   // photo (he named the files after the caption he wanted); the label is also the
