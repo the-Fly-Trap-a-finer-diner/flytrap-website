@@ -352,7 +352,7 @@ A dispatch without `deployed_sha` - a human poking the button - skips the
 `freshness` check and the rollback, since main's tip may legitimately be ahead of
 what is live.
 
-It runs `site-health.mjs`, which makes six checks and reports all of them even
+It runs `site-health.mjs`, which makes seven checks and reports all of them even
 after one fails:
 
 | Check | What it proves |
@@ -361,6 +361,7 @@ after one fails:
 | `assets` | every local script, stylesheet, preload and icon returns 200 |
 | `data.js` | parses as JavaScript and assigns `window.FT_DATA` |
 | `photos` | every `photo:` path in the live `data.js` returns 200 |
+| `indexability` | no `noindex` or blanket `Disallow: /`; canonical and `og:image` resolve; JSON-LD parses |
 | `render` | headless Chrome loads the page and React actually mounts |
 | `freshness` | the live `data.js` is the one this deploy pushed |
 
@@ -369,6 +370,12 @@ the real page in a real browser — Babel transpiles the JSX, React mounts, `dat
 executes — and looks at the resulting DOM. A blank site fails it regardless of
 cause. **Status codes are not enough:** during both CR outages every file returned
 200 while the page rendered blank.
+
+`indexability` is the opposite case: a deploy that renders perfectly and cannot be
+found. A `noindex` meta or a preview `Disallow: /` reaching production passes every
+other check here, and so does a canonical or `og:image` pointing at a 404 and
+JSON-LD broken by an unescaped quote in a synced field. It fails hard rather than
+warning, so the auto-rollback treats delisting the site as the outage it is.
 
 It drives Chrome over the DevTools Protocol using Node's built-in `WebSocket`
 (`lib/headless.mjs`). `chrome --dump-dom` was tried first and rejected: it

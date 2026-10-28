@@ -6,19 +6,28 @@
 // so an uptime check that only looks at status codes would have reported the
 // site healthy the entire time. That is the bar this has to clear.
 //
-// Six checks, all of which run even after one fails, so a single run tells you
+// Seven checks, all of which run even after one fails, so a single run tells you
 // everything that is wrong rather than just the first thing:
 //
-//   1. index      — / returns HTML with the #root mount point
-//   2. assets     — every local script, stylesheet, preload and icon returns 200
-//   3. data.js    — parses as JavaScript and assigns window.FT_DATA
-//   4. photos     — every photo: path in the live data.js returns 200
-//   5. render     — headless Chrome loads the page and React actually mounts
-//   6. freshness  — the live data.js is the one we just deployed (opt-in)
+//   1. index        — / returns HTML with the #root mount point
+//   2. assets       — every local script, stylesheet, preload and icon returns 200
+//   3. data.js      — parses as JavaScript and assigns window.FT_DATA
+//   4. photos       — every photo: path in the live data.js returns 200
+//   5. indexability — nothing in the served output tells search engines to go away
+//   6. render       — headless Chrome loads the page and React actually mounts
+//   7. freshness    — the live data.js is the one we just deployed (opt-in)
 //
-// Check 3 is the one that catches this specific outage class; check 5 is the one
+// Check 3 is the one that catches this specific outage class; check 6 is the one
 // that catches everything else, because it runs the real page in a real browser
 // and looks at what came out.
+//
+// Check 5 catches a different class entirely: a deploy that serves a working
+// page nobody can find. A preview-time `Disallow: /` or a `noindex` meta that
+// ships to production is invisible to every check above — the page renders
+// perfectly, and the site quietly leaves the index. Same for a canonical or an
+// og:image pointing at a 404, or JSON-LD that no longer parses. None of it is an
+// outage, so it never pages anyone, and it is found weeks later by wondering
+// where the traffic went.
 //
 // No dependencies, no install: Node built-ins plus the Chrome that is already on
 // the GitHub runner image. If no Chrome is found the render check reports SKIP
@@ -26,7 +35,7 @@
 //
 // Env:
 //   SITE_URL              base URL to probe        (default https://theflytrapferndale.com)
-//   EXPECT_DATA_JS_SHA    git blob sha data.js must match to pass check 6 (optional)
+//   EXPECT_DATA_JS_SHA    git blob sha data.js must match to pass check 7 (optional)
 //   ATTEMPTS              tries before giving up   (default 1)
 //   RETRY_DELAY_MS        wait between tries       (default 15000)
 //   RENDER_TIMEOUT_MS     how long to wait for React to mount (default 45000)
@@ -189,6 +198,175 @@ async function checkSpecialPhotos(state) {
     : pass(`all ${photos.length} special photo(s) return 200`)
 }
 
+// 5. Indexability. Four conditions, each of which has shipped to production on
+//    some site in this framework before:
+//
+//      a. a `noindex` robots meta, or a robots.txt that disallows everything
+//      b. a canonical that does not resolve
+//      c. an og:image that does not resolve
+//      d. JSON-LD that does not parse
+//
+//    All four are checked in one pass and every failure is reported, because
+//    finding out about (b) only after fixing (a) costs another deploy.
+
+// Robots directives from the served HTML. `robots` is the generic one;
+// `googlebot` and `bingbot` override it per crawler, so a page can look
+// indexable and not be. Attribute order varies, so this reads whole tags
+// rather than assuming name-then-content.
+export function extractRobotsMeta(html) {
+  const found = []
+  for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
+    const tag = m[0]
+    const name = tag.match(/\bname="([^"]+)"/i)
+    const content = tag.match(/\bcontent="([^"]*)"/i)
+    if (!name || !content) continue
+    const which = name[1].trim().toLowerCase()
+    if (!['robots', 'googlebot', 'bingbot'].includes(which)) continue
+    const directives = content[1].split(',').map((d) => d.trim().toLowerCase()).filter(Boolean)
+    found.push({ name: which, directives })
+  }
+  return found
+}
+
+// `noindex` and `none` both delist. Everything else (`nofollow`,
+// `max-image-preview`, …) is a preference, not a blocker.
+export function findNoindex(html) {
+  const blocking = []
+  for (const { name, directives } of extractRobotsMeta(html)) {
+    const bad = directives.filter((d) => d === 'noindex' || d === 'none')
+    if (bad.length) blocking.push(`<meta name="${name}"> says ${bad.join(', ')}`)
+  }
+  return blocking
+}
+
+// Does robots.txt disallow the whole site to everyone?
+//
+// Only `Disallow: /` under `User-agent: *` counts — `Disallow: /admin` is a
+// choice, and a disallow aimed at one named bot is not an outage. An `Allow: /`
+// later in the same group technically wins for Google, but a production
+// robots.txt containing a blanket `Disallow: /` is the preview-config footgun
+// this is here to catch, so it is reported either way.
+export function robotsTxtBlocksAll(txt) {
+  let agents = []
+  let collectingAgents = false
+
+  for (const raw of String(txt).split(/\r?\n/)) {
+    const line = raw.replace(/#.*$/, '').trim()
+    if (!line) continue
+    const m = line.match(/^([A-Za-z-]+)\s*:\s*(.*)$/)
+    if (!m) continue
+    const key = m[1].toLowerCase()
+    const value = m[2].trim()
+
+    if (key === 'user-agent') {
+      if (!collectingAgents) {
+        agents = []
+        collectingAgents = true
+      }
+      agents.push(value.toLowerCase())
+      continue
+    }
+
+    collectingAgents = false
+    if (key === 'disallow' && value === '/' && agents.includes('*')) {
+      return 'robots.txt disallows the entire site to every crawler ("Disallow: /" under "User-agent: *")'
+    }
+  }
+  return null
+}
+
+const attr = (html, re) => {
+  const m = html.match(re)
+  return m ? m[1].trim() : ''
+}
+
+export const extractCanonical = (html) =>
+  attr(html, /<link\b(?=[^>]*\brel="canonical")[^>]*\bhref="([^"]+)"/i) ||
+  attr(html, /<link\b(?=[^>]*\bhref=)[^>]*\brel="canonical"[^>]*\bhref="([^"]+)"/i)
+
+export const extractOgImage = (html) =>
+  attr(html, /<meta\b(?=[^>]*\bproperty="og:image")[^>]*\bcontent="([^"]+)"/i)
+
+// Every ld+json block, parsed. A block that parses to `{}` is syntactically
+// fine and tells search engines nothing, so @context/@type presence is part of
+// "valid" here — that is the difference between the markup existing and the
+// rich result working.
+export function parseJsonLd(html) {
+  const blocks = [...html.matchAll(/<script\b[^>]*\btype="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)]
+  const errors = []
+  const types = []
+
+  blocks.forEach((b, i) => {
+    let parsed
+    try {
+      parsed = JSON.parse(b[1])
+    } catch (err) {
+      errors.push(`block ${i + 1} is not valid JSON: ${String(err.message).slice(0, 120)}`)
+      return
+    }
+    for (const node of Array.isArray(parsed) ? parsed : [parsed]) {
+      if (!node || typeof node !== 'object') {
+        errors.push(`block ${i + 1} is not a JSON-LD object`)
+        continue
+      }
+      if (!node['@type']) errors.push(`block ${i + 1} has no @type`)
+      else types.push(...[].concat(node['@type']))
+      if (!node['@context']) errors.push(`block ${i + 1} has no @context`)
+    }
+  })
+
+  return { count: blocks.length, errors, types }
+}
+
+async function checkIndexability(state) {
+  const html = state.indexHtml || ''
+  if (!html) return skip('index.html was not fetched')
+
+  const problems = []
+  const notes = []
+
+  // (a) noindex, in the HTML and in robots.txt
+  problems.push(...findNoindex(html))
+  const robots = await get('/robots.txt')
+  if (!robots.ok) {
+    problems.push(`GET /robots.txt returned ${robots.status}`)
+  } else {
+    const blocked = robotsTxtBlocksAll(robots.body)
+    if (blocked) problems.push(blocked)
+    else notes.push('robots.txt allows crawling')
+  }
+
+  // (b) canonical
+  const canonical = extractCanonical(html)
+  if (!canonical) {
+    problems.push('no <link rel="canonical">')
+  } else {
+    const r = await get(canonical, { text: false })
+    if (!r.ok) problems.push(`canonical ${canonical} -> ${r.status}`)
+    else notes.push('canonical 200')
+  }
+
+  // (c) og:image — the social preview, and the one asset nobody looks at
+  const ogImage = extractOgImage(html)
+  if (!ogImage) {
+    problems.push('no og:image')
+  } else {
+    const r = await get(ogImage, { text: false })
+    if (!r.ok) problems.push(`og:image ${ogImage} -> ${r.status}`)
+    else notes.push('og:image 200')
+  }
+
+  // (d) JSON-LD
+  const ld = parseJsonLd(html)
+  if (!ld.count) problems.push('no application/ld+json block')
+  else if (ld.errors.length) problems.push(`invalid JSON-LD: ${ld.errors.join('; ')}`)
+  else notes.push(`${ld.count} JSON-LD block(s) parse (${[...new Set(ld.types)].join(', ')})`)
+
+  return problems.length
+    ? fail(`${problems.length} indexability problem(s): ${problems.join(' | ')}`)
+    : pass(`indexable — ${notes.join(', ')}`)
+}
+
 // GitHub's ubuntu runner images ship Chrome, Chromium and Edge. Take whichever
 // is there rather than installing one — this repo has no build step and CI is
 // not the place to start.
@@ -222,7 +400,7 @@ async function findChrome() {
   return null
 }
 
-// 5. The check that does not care how the site broke.
+// 6. The check that does not care how the site broke.
 //
 //    Everything above inspects bytes. This runs the actual page in an actual
 //    browser — Babel transpiles the JSX, React mounts, data.js executes — and
@@ -284,7 +462,7 @@ async function checkRender(state) {
   )
 }
 
-// 6. Post-deploy only: is the file being served the one we just pushed? Pages
+// 7. Post-deploy only: is the file being served the one we just pushed? Pages
 //    can lag or a deploy can fail silently, and "the site is fine" is not the
 //    same answer as "the update went live".
 async function checkFreshness(state) {
@@ -306,6 +484,7 @@ const CHECKS = [
   ['assets', checkAssets],
   ['data.js', checkDataJs],
   ['photos', checkSpecialPhotos],
+  ['indexability', checkIndexability],
   ['render', checkRender],
   ['freshness', checkFreshness],
 ]
