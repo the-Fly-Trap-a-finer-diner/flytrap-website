@@ -548,5 +548,25 @@
     "veg": false,
     "photo": "assets/specials/toast-shannon-s-ink-black-heart.jpg",
     "photoBlob": "85664c18b3ed48a859a3f2926ec3398e01866358"
+  },
+  {
+    "firstSeen": "2026-10-30",
+    "lastSeen": "2026-10-30",
+    "name": "M-M-M-My Mujadra",
+    "desc": "Eggs how you like 'em hanging with sumac dressed greens, cumin blessed black lentils, crisp rice and an herby green chili, feta yogurt; pita.",
+    "price": "13.95",
+    "veg": true,
+    "photo": "assets/specials/toast-m-m-m-my-mujadra.jpg",
+    "photoBlob": "b7a526715b8b5dd84fa501280129375f8f4ceabf"
+  },
+  {
+    "firstSeen": "2026-10-30",
+    "lastSeen": "2026-10-30",
+    "name": "The Central Grocery",
+    "desc": "Breakfast muffaletta? An omelette stuffed with coppacola ham, genoa salami, mortadella and arugula. Provolone and fontinella cheeses. Topped with an olive calabrian chili relish; browns and toast.",
+    "price": "14.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-central-grocery.jpg",
+    "photoBlob": "108e803328241dac810510a6b3810871c22bc4a3"
   }
 ]

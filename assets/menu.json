@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-10-29T16:26:03.302+0000",
+  "lastUpdated": "2026-10-30T20:35:09.191+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -775,7 +775,7 @@
       "cat": "get-canned",
       "nm": "Smashd N/A ",
       "desc": "",
-      "price": "5.00"
+      "price": "6.00"
     },
     {
       "cat": "all-bottled-up",
@@ -881,7 +881,7 @@
     },
     {
       "cat": "mixed-drinks",
-      "nm": "T and T",
+      "nm": "Who's That Rye",
       "desc": "",
       "price": "9.00"
     },

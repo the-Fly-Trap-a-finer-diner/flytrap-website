@@ -114,8 +114,8 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Karen Liinangi", desc: "Chocolate poundcake french toast with raspberry puree, whipped cream, red hots and cinnamon syrup.", veg: true, photo: "assets/specials/toast-the-karen-liinangi.jpg", price: "12.95" },
-    { id: "special-2", name: "Shannon's Ink Black Heart", desc: "House made smoked spooky sausage with ghost pepper and jack cheese, served up with a couple eggs and an ancho sauced monster mish-mash of sweet potato, roasted corn and red skins; toast!", veg: false, photo: "assets/specials/toast-shannon-s-ink-black-heart.jpg", price: "15.95" },
+    { id: "special-1", name: "M-M-M-My Mujadra", desc: "Eggs how you like 'em hanging with sumac dressed greens, cumin blessed black lentils, crisp rice and an herby green chili, feta yogurt; pita.", veg: true, photo: "assets/specials/toast-m-m-m-my-mujadra.jpg", price: "13.95" },
+    { id: "special-2", name: "The Central Grocery", desc: "Breakfast muffaletta? An omelette stuffed with coppacola ham, genoa salami, mortadella and arugula. Provolone and fontinella cheeses. Topped with an olive calabrian chili relish; browns and toast.", veg: false, photo: "assets/specials/toast-the-central-grocery.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
