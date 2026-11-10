@@ -115,7 +115,6 @@ window.FT_DATA = {
   weekOf: "Week of July 6",
   specials: [
     { id: "special-1", name: "The Anchor Bar", desc: "Sauced dipped house made buffalo chicken sausage served up with a couple of eggs, house spuds and a celery root, blue cheese slaw; toast!", veg: false, photo: "assets/specials/toast-the-anchor-bar.jpg", price: "15.95" },
-    { id: "special-2", name: "The Kensington Market", desc: "Yup, it's a poutine! Eggs how you like 'em on a pile of fries with cheddar cheese curds, a pulled mushroom, red chili gravy and a cilantro lime crema. Toast!", veg: true, photo: "assets/specials/toast-the-kensington-market.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
