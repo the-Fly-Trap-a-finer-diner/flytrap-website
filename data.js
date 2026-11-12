@@ -114,7 +114,7 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Anchor Bar", desc: "Sauced dipped house made buffalo chicken sausage served up with a couple of eggs, house spuds and a celery root, blue cheese slaw; toast!", veg: false, photo: "assets/specials/toast-the-anchor-bar.jpg", price: "15.95" },
+    { id: "special-1", name: "the Teressa Bellissimo", desc: "a rumble of eggs with house made buffalo chicken sausage, blue cheese, apples, sweet and hot peppers and greens kissed with the classic hot sauce drizzle; comes with spuds and toast!", veg: false, photo: "", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */

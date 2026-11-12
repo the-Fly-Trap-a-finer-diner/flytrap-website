@@ -588,5 +588,15 @@
     "veg": true,
     "photo": "assets/specials/toast-the-kensington-market.jpg",
     "photoBlob": "2e35d3b814c103c3bcc8912fff63ee282390221b"
+  },
+  {
+    "firstSeen": "2026-11-12",
+    "lastSeen": "2026-11-12",
+    "name": "the Teressa Bellissimo",
+    "desc": "a rumble of eggs with house made buffalo chicken sausage, blue cheese, apples, sweet and hot peppers and greens kissed with the classic hot sauce drizzle; comes with spuds and toast!",
+    "price": "14.95",
+    "veg": false,
+    "photo": "",
+    "photoBlob": ""
   }
 ]
