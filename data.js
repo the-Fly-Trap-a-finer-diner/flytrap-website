@@ -114,7 +114,8 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "the Teressa Bellissimo", desc: "a rumble of eggs with house made buffalo chicken sausage, blue cheese, apples, sweet and hot peppers and greens kissed with the classic hot sauce drizzle; comes with spuds and toast!", veg: false, photo: "", price: "14.95" },
+    { id: "special-1", name: "Feliz Cumpleaños Jeremias!", desc: "A grilled chorizo meatloaf sandwich on a house roll with jack cheese, pickled fresno and onion, smoked chili mayo and a sunny egg; usual suspects.", veg: false, photo: "assets/specials/toast-feliz-cumplea-os-jeremias.jpg", price: "15.95" },
+    { id: "special-2", name: "The Lu Chi", desc: "An omelette stuffed with herby coconut green curry, varied eastern veggies, toasted tofu and crispy wontons; spuds and toast!", veg: true, photo: "assets/specials/toast-the-lu-chi.jpg", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */

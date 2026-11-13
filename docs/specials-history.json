@@ -598,5 +598,25 @@
     "veg": false,
     "photo": "",
     "photoBlob": ""
+  },
+  {
+    "firstSeen": "2026-11-13",
+    "lastSeen": "2026-11-13",
+    "name": "Feliz Cumpleaños Jeremias!",
+    "desc": "A grilled chorizo meatloaf sandwich on a house roll with jack cheese, pickled fresno and onion, smoked chili mayo and a sunny egg; usual suspects.",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-feliz-cumplea-os-jeremias.jpg",
+    "photoBlob": "ad172e6291de3fd903996c3472a11794db62477d"
+  },
+  {
+    "firstSeen": "2026-11-13",
+    "lastSeen": "2026-11-13",
+    "name": "The Lu Chi",
+    "desc": "An omelette stuffed with herby coconut green curry, varied eastern veggies, toasted tofu and crispy wontons; spuds and toast!",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-lu-chi.jpg",
+    "photoBlob": "c0f23f063fcf98c88d1aa845bd544010488a55fd"
   }
 ]
