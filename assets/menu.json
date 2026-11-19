@@ -1,6 +1,6 @@
 {
   "source": "toast",
-  "lastUpdated": "2026-11-16T15:40:52.156+0000",
+  "lastUpdated": "2026-11-19T17:18:19.857+0000",
   "categories": [
     {
       "id": "all-things-eggs",
@@ -998,6 +998,12 @@
       "nm": "Jittery Cricket",
       "desc": "",
       "price": "10.00"
+    },
+    {
+      "cat": "mixed-drinks",
+      "nm": "The Salty Dude",
+      "desc": "",
+      "price": "7.00"
     },
     {
       "cat": "vodka",
