@@ -618,5 +618,25 @@
     "veg": true,
     "photo": "assets/specials/toast-the-lu-chi.jpg",
     "photoBlob": "c0f23f063fcf98c88d1aa845bd544010488a55fd"
+  },
+  {
+    "firstSeen": "2026-11-20",
+    "lastSeen": "2026-11-20",
+    "name": "The Tom Conti",
+    "desc": "A toasted barley, parmesan and roasted mushroom risotto with eggs how you like 'em, aged scottish cheddar and sherry dressed arugula; toast!",
+    "price": "14.95",
+    "veg": true,
+    "photo": "assets/specials/toast-the-tom-conti.jpg",
+    "photoBlob": "1b73bbb3f5ff2204d05783f66d3dece9d19def6a"
+  },
+  {
+    "firstSeen": "2026-11-20",
+    "lastSeen": "2026-11-20",
+    "name": "The Amy Sedaris",
+    "desc": "House made lamb pistachio sausage served up with rumbled eggs with sumac, spinach and feta topped with tzatziki; browns and toast.",
+    "price": "15.95",
+    "veg": false,
+    "photo": "assets/specials/toast-the-amy-sedaris.jpg",
+    "photoBlob": "f3bb63e5eabdafe9d67fee2263f29bb4d83bd766"
   }
 ]
