@@ -249,6 +249,16 @@ excluding `.git`, `.github`, `.claude`, `docs`, `test`, `apps-script`, `AGENTS.m
 `README.md`, `ROADMAP.md`, `LICENSE`, `.gitignore`, `.image-slots.state.json`, then
 uploads and deploys. **Merging to `main` publishes immediately.**
 
+**A failed deploy retries, then tells someone.** The deploy step tries up to three
+times (1 and then 3 minutes apart) against the artifact the run already uploaded.
+If all three fail, an `alert` job opens one `deploy-failed` issue assigned to
+`INCIDENT_ASSIGNEES` (default Ryan and Sean), which GitHub emails; a repeat failure
+comments on it, and the next successful deploy closes it. Why: on 2026-11-20 a
+GitHub-side error failed the deploy of Friday's specials, nothing re-ran it, the
+next syncs had no new Toast changes to trigger another, and the site ran a day
+behind with no alert, because post-deploy verify only starts after a deploy
+succeeds and site health only checks that the site is up.
+
 **It also precompiles the JSX.** `.github/scripts/precompile-jsx.mjs` transpiles
 the five `.jsx` files into plain `.js` inside `_site` and rewrites `index.html` to
 load those instead, dropping the `@babel/standalone` tag. The repo is untouched —
