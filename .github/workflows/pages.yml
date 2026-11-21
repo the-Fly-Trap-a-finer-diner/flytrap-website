@@ -11,6 +11,8 @@ permissions:
   id-token: write
   # dispatching "Post-deploy verify" below
   actions: write
+  # opening and closing the "deploy failed" issue below
+  issues: write
 
 concurrency:
   group: pages
@@ -20,7 +22,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deploy_retry_1.outputs.page_url || steps.deploy_retry_2.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -113,7 +115,38 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
+      # Deploy, and try again if GitHub's side hiccups.
+      #
+      # On 2026-11-20 the Toast sync committed Friday's specials at 6:07 PM ET
+      # and this step failed 10 seconds later: "Fetching artifact metadata
+      # failed ... Please re-run the deployment at a later time." The artifact
+      # had uploaded fine (20.4 MB); GitHub just could not find it yet. Nothing
+      # re-ran it. The next two syncs saw no new Toast changes, so they had no
+      # reason to dispatch a deploy, and the site showed the previous week's
+      # special for 16 hours until someone ran the sync by hand.
+      #
+      # So: two more tries, 1 and then 3 minutes apart, against the artifact
+      # this run already uploaded. Only the last try is allowed to fail the
+      # job, which is what fires the alert job below.
       - id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Wait before retrying the deploy
+        if: steps.deployment.outcome == 'failure'
+        run: |
+          echo "::warning::Pages deploy failed; retrying in 60s."
+          sleep 60
+      - id: deploy_retry_1
+        if: steps.deployment.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Wait before the last deploy try
+        if: steps.deploy_retry_1.outcome == 'failure'
+        run: |
+          echo "::warning::Pages deploy failed twice; last try in 180s."
+          sleep 180
+      - id: deploy_retry_2
+        if: steps.deploy_retry_1.outcome == 'failure'
         uses: actions/deploy-pages@v5
 
       # Verification is dispatched from here rather than keyed to this workflow
@@ -132,3 +165,108 @@ jobs:
         run: |
           gh workflow run "Post-deploy verify" --ref main \
             -f deployed_sha=${{ github.sha }}
+
+      # A deploy got through, so any open "deploy failed" issue is resolved.
+      - name: Close any open deploy-failed issue
+        # Housekeeping only. It must never fail a deploy that already succeeded.
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const MARKER = '<!-- flytrap-deploy-failed -->'
+            const { data } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'deploy-failed', per_page: 100,
+            })
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`
+            for (const issue of data.filter((i) => (i.body || '').includes(MARKER))) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issue.number,
+                body: `Deployed cleanly in [this run](${runUrl}). Closing.`,
+              })
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: 'closed' })
+              core.notice(`Closed #${issue.number}.`)
+            }
+
+  # Tell a person when a deploy fails, so new specials never sit unpublished
+  # without anyone knowing.
+  #
+  # Post-deploy verify cannot catch this: the deploy dispatches it as its last
+  # step, so a deploy that fails never starts it. Site health only checks that
+  # the site is up, and a stale site is up. GitHub's own failure email goes to
+  # whoever triggered the run, which for the Toast bot is github-actions[bot],
+  # i.e. nobody.
+  #
+  # Same approach as .github/actions/incident: a GitHub issue assigned to the
+  # people who can fix it, which GitHub emails. No secrets, no mail server.
+  # One open issue at a time; a repeat failure comments on it (which emails
+  # again), and the next successful deploy closes it.
+  alert:
+    needs: deploy
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          # Set the INCIDENT_ASSIGNEES repo variable to change who gets emailed.
+          ASSIGNEES: ${{ vars.INCIDENT_ASSIGNEES || 'ryankolean,smcclanaghan76' }}
+          DEPLOY_SHA: ${{ github.sha }}
+        with:
+          script: |
+            // Values arrive via env, never interpolated into the script.
+            const { owner, repo } = context.repo
+            const LABEL  = 'deploy-failed'
+            const MARKER = '<!-- flytrap-deploy-failed -->'
+            const sha = process.env.DEPLOY_SHA
+            const assignees = (process.env.ASSIGNEES || '')
+              .split(',').map((s) => s.trim()).filter(Boolean)
+            const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`
+            const commitUrl = `${context.serverUrl}/${owner}/${repo}/commit/${sha}`
+
+            const body = [
+              MARKER, ``,
+              `## The site deploy failed, so the live site is behind \`main\``, ``,
+              `The deploy of [\`${sha.slice(0, 7)}\`](${commitUrl}) failed three times.`,
+              `Whatever that commit changed (new specials, for example) is not on`,
+              `theflytrapferndale.com yet. The site is still up, showing the previous version.`, ``,
+              `### What to do`, ``,
+              `1. Open [the failed run](${runUrl}) and press **Re-run all jobs**.`,
+              `2. If that fails too, check https://www.githubstatus.com for a Pages or Actions outage, and re-run once it clears.`,
+              `3. Or go to **Actions > Deploy to GitHub Pages > Run workflow** to deploy the current \`main\`.`, ``,
+              `This issue closes itself on the next successful deploy.`,
+            ].join('\n')
+
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: LABEL, per_page: 100,
+            })
+            const existing = open.find((i) => (i.body || '').includes(MARKER))
+            if (existing) {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body })
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: existing.number,
+                body: `Another deploy failed: [\`${sha.slice(0, 7)}\`](${commitUrl}), [run](${runUrl}).`,
+              })
+              core.warning(`Deploy failed again; commented on #${existing.number}.`)
+              return
+            }
+
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: LABEL })
+            } catch {
+              await github.rest.issues.createLabel({
+                owner, repo, name: LABEL, color: 'd93f0b',
+                description: 'A Pages deploy failed; the live site is behind main',
+              })
+            }
+            const { data: created } = await github.rest.issues.create({
+              owner, repo, title: '[deploy failed] The live site is behind main', body, labels: [LABEL],
+            })
+            // Assign separately so one stale username cannot swallow the alert.
+            try {
+              await github.rest.issues.addAssignees({ owner, repo, issue_number: created.number, assignees })
+            } catch (err) {
+              core.warning(`Opened #${created.number} but could not assign ${assignees.join(', ')}: ${err.message}`)
+            }
+            core.notice(`Deploy failed; opened #${created.number} and notified ${assignees.join(', ')}.`)
