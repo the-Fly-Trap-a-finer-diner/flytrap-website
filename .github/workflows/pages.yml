@@ -170,7 +170,7 @@ jobs:
       - name: Close any open deploy-failed issue
         # Housekeeping only. It must never fail a deploy that already succeeded.
         continue-on-error: true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { owner, repo } = context.repo
@@ -208,7 +208,7 @@ jobs:
     permissions:
       issues: write
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v9
         env:
           # Set the INCIDENT_ASSIGNEES repo variable to change who gets emailed.
           ASSIGNEES: ${{ vars.INCIDENT_ASSIGNEES || 'ryankolean,smcclanaghan76' }}
