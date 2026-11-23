@@ -74,7 +74,7 @@ This flat layout is deliberate and enforced — see [AGENTS.md](../AGENTS.md).
 | `.github/workflows/post-deploy-verify.yml` | Proves the site works after every deploy; rolls back if it does not. |
 | `.github/workflows/site-health.yml` | Scheduled uptime monitoring with alerting. |
 | `.github/SYNC_PAUSED` | Only present after an automatic rollback. While it exists the Toast sync skips every run. |
-| `apps-script/staff-refresh/` | The staff refresh link: a Google Apps Script web app that starts the Toast sync on demand, rate limited. Not deployed with the site. See `docs/STAFF_REFRESH.md`. |
+| `workers/toast-refresh/` | Cloudflare Worker that starts the Toast sync when Toast publishes a menu change (signed webhook) or a staff member presses the refresh link. Rate limited. Not deployed with the site. See `docs/TOAST_REFRESH.md`. |
 | `apps-script/lib/` | Shared block-building helpers. `specials.js` is imported by `.github/scripts/specials-sync.mjs` and the tests; `github.js` by `test/github.test.mjs`. The Apps Script web app that gave the directory its name is gone — only the library remains. |
 | `test/*.mjs` | `node:test` unit tests for the specials/soup block builders. |
 | `.claude/` | Agent tooling: the design-sync skill and its state, launch config, archived plans/reports. |
@@ -171,10 +171,10 @@ Two jobs. `guard` first: if `.github/SYNC_PAUSED` exists the `sync` job is
 would drown the incident it belongs to). That file is written by an automatic
 rollback and removed by a human. See *Rollback* below.
 
-On a manual run, `guard` also runs `dispatch-guard.mjs`: if another manual run
-started under 2 minutes ago, or 30 already started in 24 hours, `sync` is skipped
-the same way. It is the GitHub-side backstop for the staff refresh link; see
-[STAFF_REFRESH.md](STAFF_REFRESH.md).
+On a manual run, `guard` also runs `dispatch-guard.mjs`: if 48 manual runs already
+started in 24 hours (not counting cancelled ones), `sync` is skipped the same way.
+It is the GitHub-side backstop for the refresh Worker; see
+[TOAST_REFRESH.md](TOAST_REFRESH.md).
 
 Then `sync`, in order:
 
@@ -456,13 +456,13 @@ issues a day and everyone would mute the repo.
 are one thread — and a deploy that fixes an outage closes the issue the monitor
 opened.
 
-### `apps-script/staff-refresh/` — the staff refresh link
+### `workers/toast-refresh/` — instant refresh
 
-A Google Apps Script web app with one button that starts the Toast sync now, with a
-cooldown, hourly and daily caps, and an unguessable key in the link. Unlike the
-removed form below it cannot write content: its token is fine-grained, limited to
-Actions on this repo, and the repo name is a Script Property rather than hardcoded.
-Setup and limits: [STAFF_REFRESH.md](STAFF_REFRESH.md).
+A Cloudflare Worker that starts the Toast sync within seconds of a Toast menu
+publish (Toast's signed `menus_updated` webhook), plus a rate-limited staff link as a
+backup. Unlike the removed Apps Script form below, it cannot write content: its
+GitHub token is fine-grained and limited to Actions on this repo. Setup, limits and
+how to turn it off: [TOAST_REFRESH.md](TOAST_REFRESH.md).
 
 ### `apps-script/lib/` — shared helpers, not an app
 

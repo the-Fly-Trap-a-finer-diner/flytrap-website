@@ -47,6 +47,7 @@ jobs:
             --exclude='docs' \
             --exclude='test' \
             --exclude='apps-script' \
+            --exclude='workers' \
             --exclude='AGENTS.md' \
             --exclude='README.md' \
             --exclude='ROADMAP.md' \

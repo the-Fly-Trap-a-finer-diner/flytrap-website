@@ -23,7 +23,7 @@ name: Toast sync
 # Required repo secrets: TOAST_CLIENT_ID, TOAST_CLIENT_SECRET, TOAST_RESTAURANT_GUID
 # Optional: TOAST_HOSTNAME, TOAST_VEG_MARKER, TOAST_SPECIALS_GROUP, TOAST_EXCLUDE_GROUPS
 
-run-name: ${{ inputs.source == 'staff-refresh' && 'Toast sync (staff refresh)' || 'Toast sync' }}
+run-name: ${{ inputs.source == 'toast-webhook' && 'Toast sync (Toast publish)' || inputs.source == 'staff-refresh' && 'Toast sync (staff refresh)' || 'Toast sync' }}
 
 on:
   schedule:
@@ -46,8 +46,9 @@ on:
     - cron: '2,17,32,47 * * * *'
   workflow_dispatch:
     inputs:
-      # Who asked. The staff refresh link sends 'staff-refresh' so its runs are
-      # labelled in the Actions list; anything else is a person on GitHub.
+      # Who asked, so runs are labelled in the Actions list. The refresh Worker
+      # (workers/toast-refresh) sends 'toast-webhook' or 'staff-refresh';
+      # 'github' is a person pressing Run workflow.
       source:
         description: 'Who started this run (leave as is)'
         type: string
@@ -104,7 +105,7 @@ jobs:
           else
             echo "paused=false" >> "$GITHUB_OUTPUT"
           fi
-      # Backstop limit on manual runs, for when the staff refresh link's own
+      # Backstop daily cap on manual runs, for when the refresh Worker's own
       # limits are bypassed. Scheduled runs skip it. See dispatch-guard.mjs.
       - id: limit
         if: github.event_name == 'workflow_dispatch'

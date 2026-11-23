@@ -1,14 +1,17 @@
 // Backstop limit on manually started Toast syncs, enforced inside GitHub.
 //
-// The staff refresh link (apps-script/staff-refresh) has its own, stricter
-// limits. This is the second wall, for the case where those are bypassed: the
-// link's GitHub token leaks and someone calls the API directly. Whoever holds
-// that token can start runs but cannot edit this file (the token has no
-// contents access), so a limit here holds no matter who is dispatching.
+// The refresh Worker (workers/toast-refresh) has its own limits for the Toast
+// webhook and the staff link. This is the second wall, for the case where those
+// are bypassed: the Worker's GitHub token leaks and someone calls the API
+// directly. Whoever holds that token can start runs but cannot edit this file
+// (the token has no contents access), so a limit here holds no matter who is
+// dispatching.
 //
-// It counts every workflow_dispatch run of the Toast sync, by anyone, so the
-// limits are generous: no person pressing Run workflow will ever hit them.
-// Scheduled runs are never limited.
+// It counts every workflow_dispatch run of the Toast sync, by anyone, except
+// runs GitHub cancelled. There is no minimum gap: several publishes in a row are
+// normal, and the workflow's concurrency group already folds a burst into one
+// running sync plus one queued sync that reads the newest menu (GitHub cancels
+// the older queued ones). Scheduled runs are never limited.
 //
 // On a GitHub API error it lets the run through. Failing closed would block a
 // real sync over an API hiccup, and the refresh link's own limits still apply.
@@ -16,8 +19,7 @@ import { appendFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 
 export const LIMITS = {
-  minGapMs: 2 * 60 * 1000, // no two manual runs closer than this
-  perDay: 30, // manual runs in any rolling 24 hours, this one included
+  perDay: 48, // manual runs in any rolling 24 hours, this one included
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -26,13 +28,10 @@ const DAY_MS = 24 * 60 * 60 * 1000
 // Returns { allowed, reason }.
 export function decideDispatch(runs, now, currentRunId, limits = LIMITS) {
   const earlier = (runs || [])
-    .filter((r) => r && String(r.id) !== String(currentRunId))
+    .filter((r) => r && String(r.id) !== String(currentRunId) && r.conclusion !== 'cancelled')
     .map((r) => Date.parse(r.created_at))
     .filter((t) => Number.isFinite(t) && t <= now && now - t < DAY_MS)
 
-  if (earlier.some((t) => now - t < limits.minGapMs)) {
-    return { allowed: false, reason: `another manual sync started less than ${limits.minGapMs / 60000} minutes ago` }
-  }
   if (earlier.length + 1 > limits.perDay) {
     return { allowed: false, reason: `${earlier.length} manual syncs already in the last 24 hours (limit ${limits.perDay})` }
   }
