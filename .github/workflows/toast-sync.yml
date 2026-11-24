@@ -23,6 +23,8 @@ name: Toast sync
 # Required repo secrets: TOAST_CLIENT_ID, TOAST_CLIENT_SECRET, TOAST_RESTAURANT_GUID
 # Optional: TOAST_HOSTNAME, TOAST_VEG_MARKER, TOAST_SPECIALS_GROUP, TOAST_EXCLUDE_GROUPS
 
+run-name: ${{ inputs.source == 'toast-webhook' && 'Toast sync (Toast publish)' || inputs.source == 'staff-refresh' && 'Toast sync (staff refresh)' || 'Toast sync' }}
+
 on:
   schedule:
     # We ask for every 15 minutes. GitHub gives us roughly one run every three
@@ -44,6 +46,13 @@ on:
     - cron: '2,17,32,47 * * * *'
   workflow_dispatch:
     inputs:
+      # Who asked, so runs are labelled in the Actions list. The refresh Worker
+      # (workers/toast-refresh) sends 'toast-webhook' or 'staff-refresh';
+      # 'github' is a person pressing Run workflow.
+      source:
+        description: 'Who started this run (leave as is)'
+        type: string
+        default: 'github'
       dry_run:
         description: 'Verify only — pull from Toast and log, write/commit nothing'
         type: boolean
@@ -74,6 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       paused: ${{ steps.check.outputs.paused }}
+      throttled: ${{ steps.limit.outputs.throttled }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -95,10 +105,17 @@ jobs:
           else
             echo "paused=false" >> "$GITHUB_OUTPUT"
           fi
+      # Backstop daily cap on manual runs, for when the refresh Worker's own
+      # limits are bypassed. Scheduled runs skip it. See dispatch-guard.mjs.
+      - id: limit
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/dispatch-guard.mjs
 
   sync:
     needs: guard
-    if: needs.guard.outputs.paused != 'true'
+    if: needs.guard.outputs.paused != 'true' && needs.guard.outputs.throttled != 'true'
     runs-on: ubuntu-latest
     env:
       TOAST_CLIENT_ID: ${{ secrets.TOAST_CLIENT_ID }}

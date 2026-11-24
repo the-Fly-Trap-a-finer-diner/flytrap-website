@@ -1,0 +1,18 @@
+# Cloudflare Worker that starts the Toast sync. Setup: docs/TOAST_REFRESH.md.
+# Secrets are set with `wrangler secret put`, never written here.
+name = "flytrap-toast-refresh"
+main = "src/worker.mjs"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+GITHUB_REPO = "the-Fly-Trap-a-finer-diner/flytrap-website"
+
+# Rate-limit history and webhook de-duplication. Create the namespace with
+# `wrangler kv namespace create REFRESH_STATE` and paste its id here.
+[[kv_namespaces]]
+binding = "REFRESH_STATE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[observability]
+enabled = true
