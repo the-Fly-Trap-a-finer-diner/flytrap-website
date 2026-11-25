@@ -638,5 +638,15 @@
     "veg": false,
     "photo": "assets/specials/toast-the-amy-sedaris.jpg",
     "photoBlob": "f3bb63e5eabdafe9d67fee2263f29bb4d83bd766"
+  },
+  {
+    "firstSeen": "2026-11-25",
+    "lastSeen": "2026-11-25",
+    "name": "Il Telefono",
+    "desc": "a rumble of eggs with Roasted Artichokes, Spinach, Red Onion and Sheep's Milk Feta topped with an Oven-Dried Tomato Pesto; spuds and toast!",
+    "price": "14.95",
+    "veg": true,
+    "photo": "",
+    "photoBlob": ""
   }
 ]

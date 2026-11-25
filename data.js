@@ -114,9 +114,7 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "The Tom Conti", desc: "A toasted barley, parmesan and roasted mushroom risotto with eggs how you like 'em, aged scottish cheddar and sherry dressed arugula; toast!", veg: true, photo: "assets/specials/toast-the-tom-conti.jpg", price: "14.95" },
-    { id: "special-2", name: "The Amy Sedaris", desc: "House made lamb pistachio sausage served up with rumbled eggs with sumac, spinach and feta topped with tzatziki; browns and toast.", veg: false, photo: "assets/specials/toast-the-amy-sedaris.jpg", price: "15.95" },
-    { id: "special-3", name: "Special Sausage", desc: "", veg: true, photo: "", price: "6" },
+    { id: "special-1", name: "Il Telefono", desc: "a rumble of eggs with Roasted Artichokes, Spinach, Red Onion and Sheep's Milk Feta topped with an Oven-Dried Tomato Pesto; spuds and toast!", veg: true, photo: "", price: "14.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
