@@ -114,7 +114,8 @@ window.FT_DATA = {
   sourcePost: "",
   weekOf: "Week of July 6",
   specials: [
-    { id: "special-1", name: "Il Telefono", desc: "a rumble of eggs with Roasted Artichokes, Spinach, Red Onion and Sheep's Milk Feta topped with an Oven-Dried Tomato Pesto; spuds and toast!", veg: true, photo: "", price: "14.95" },
+    { id: "special-1", name: "Il Telefono", desc: "A rumble of eggs with roasted artichokes, spinach, red onion and sheep's milk feta topped with an oven-dried tomato pesto; spuds and toast!", veg: true, photo: "assets/specials/toast-il-telefono.jpg", price: "14.95" },
+    { id: "special-2", name: "The Neal Cassady", desc: "Eggs how you like 'em on a tamarind BBQ smoked chicken hash with house spuds, roasted poblanos, mustard greens, jack cheese and a lime crema. Toast.", veg: false, photo: "assets/specials/toast-the-neal-cassady.jpg", price: "15.95" },
   ],
   /* SPECIALS:END */
   /* EXTRAS:START */
